@@ -1,19 +1,11 @@
-import { EdDSASigner, ES256KSigner } from 'did-jwt'
 import { ThreeIdConnect, EthereumAuthProvider } from '3id-connect'
 import { Ed25519Provider } from 'key-did-provider-ed25519'
 import KeyResolver from '@ceramicnetwork/key-did-resolver'
 import { DID, DIDOptions } from 'dids'
-import { BNInput, ec, eddsa } from 'elliptic'
+import { ec, eddsa } from 'elliptic'
 import EthrDID from 'ethr-did'
-import { Wallet } from 'ethers'
-import { Buffer } from 'buffer'
+import { DIDContext } from './DIDContext'
 
-
-export interface DIDContext {
-  did: DID
-  getIssuer?: any;
-  issuer?: any
-}
 /**
  * Manages DIDs
  */
@@ -44,7 +36,7 @@ export class DIDManager {
    * using XDV
    * @param edDSAKeyPair EdDSA keypair
    */
-  async create3ID_Ed25519(edDSAKeyPair: eddsa.KeyPair):  Promise<DIDContext> {
+  async create3ID_Ed25519(edDSAKeyPair: eddsa.KeyPair): Promise<DIDContext> {
     let seed = edDSAKeyPair.getSecret().slice(0, 32)
 
     const provider = new Ed25519Provider(seed)
@@ -113,7 +105,7 @@ export class DIDManager {
     const threeid = new ThreeIdConnect()
     const authProvider = new EthereumAuthProvider(web3provider, address)
     await threeid.connect(authProvider)
-    
+
     const did = new DID({
       provider: (await threeid.getDidProvider()) as any,
       resolver: KeyResolver.getResolver(),

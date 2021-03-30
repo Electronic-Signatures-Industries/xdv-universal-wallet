@@ -1,17 +1,9 @@
-import { bigToUint8Array } from '../crypto/BigIntToUint8Array'
-import { DIDDocumentBuilder } from '../did/DIDDocumentBuilder'
-import { BigNumber, ethers } from 'ethers'
-import { expect } from 'chai'
-import { JOSEService } from '../crypto/JOSEService'
-import { JWTService } from '../crypto/JWTService'
-import { KeyConvert, X509Info } from '../crypto/KeyConvert'
-import { LDCryptoTypes } from '../crypto/LDCryptoTypes'
+import { ethers } from 'ethers'
 import { Wallet } from '../crypto/Wallet'
-import { DIDManager } from './DIDManager'
-import { IPLDManager } from './IPLDManager'
-import * as privateBox from 'private-box'
-import { W3CVerifiedCredential } from './W3CVerifiedCredential'
 import moment from 'moment'
+
+jest.mock('../3id/IPLDManager')
+jest.mock('../3id/DIDManager')
 
 let localStorage = {}
 
@@ -19,9 +11,9 @@ describe('DID specs', function () {
   let selectedWallet: Wallet
   let id = null
   let url = 'https://ropsten.infura.io/v3/79110f2241304162b087759b5c49cf99'
-  before(async function () {})
+  beforeAll(async function () { })
 
-  xit('when KYC onboarding should pay with blockchain and register to get verified', async function () {
+  it.skip('when KYC onboarding should pay with blockchain and register to get verified', async function () {
     //Register Name, Email and Ether account
     const personalinfo = {
       name: 'John Doe',
@@ -40,7 +32,7 @@ describe('DID specs', function () {
     const result = await wallet.createES256K({
       passphrase,
       rpcUrl: url,
-      accountName:''
+      accountName: ''
     })
     const sig = await result.did.createJWS({
       name: 'Personal Signing',
@@ -57,10 +49,10 @@ describe('DID specs', function () {
     }
 
     // Optional - create DID backup in Swarm
-    expect(result.id.length).to.be.above(0)
+    expect(result.id.length).toBeGreaterThan(0)
   })
 
-  xit('when change owner, should validate it is', async function () {
+  it.skip('when change owner, should validate it is', async function () {
     //Register Name, Email and Ether account
     const personalinfo = {
       name: 'John Doe',
@@ -84,7 +76,7 @@ describe('DID specs', function () {
     })
 
     const payload = Buffer.from('PersonalSigning');
-    const [e, res] = await wallet.sign('ES256K', result.id,  payload)
+    const [e, res] = await wallet.sign('ES256K', result.id, payload)
     const sigEth = ethers.utils.splitSignature(res)
 
     // Create DID
@@ -100,13 +92,13 @@ describe('DID specs', function () {
     await result.did.changeOwner('0xc')
 
     // Add Delegate
-    const since = moment().unix() + (60*60*1)
+    const since = moment().unix() + (60 * 60 * 1)
     await result.did.addDelegate('0xd', {
       delegateType: '',
       expiresIn: since,
     });
 
-    expect(result.id.length).to.be.above(0)
+    expect(result.id.length).toBeGreaterThan(0)
   })
 })
 ///

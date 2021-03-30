@@ -88,7 +88,7 @@ export class KeyStore implements KeyStoreModel {
   public ED25519: any
   public ES256K: any
   public P256: any
-  constructor() {}
+  constructor() { }
 }
 
 // Main data repository
@@ -166,6 +166,7 @@ import { RxDBEncryptionPlugin } from 'rxdb/plugins/encryption'
 import { RxDBValidatePlugin } from 'rxdb/plugins/validate'
 import { RxDBUpdatePlugin } from 'rxdb/plugins/update'
 import { Console } from 'console'
+import { getWeb3 } from '../utils/web3factory'
 addRxPlugin(RxDBDevModePlugin)
 
 /**
@@ -218,9 +219,7 @@ export class Wallet {
         password: passphrase,
         ignoreDuplicate: true
       })
- 
-      
-   
+
       return this;
     } catch (e) {
       // already exists
@@ -250,8 +249,8 @@ export class Wallet {
       currentKeystoreId: '',
       keystores: [],
     }
-    if (!( (await this.db.accounts.findByIds(['xdv:account'])).size > 0)) {
-        return accounts.insert(accountModel)
+    if (!((await this.db.accounts.findByIds(['xdv:account'])).size > 0)) {
+      return accounts.insert(accountModel)
     }
   }
 
@@ -329,7 +328,7 @@ export class Wallet {
       publicKey: kpInstance.getPublic('hex'),
     } as unknown) as XDVUniversalProvider
   }
-  
+
   /**
    * Creates an universal wallet for Ed25519
    * @param nodeurl EVM Node
@@ -363,11 +362,11 @@ export class Wallet {
    */
   async createWeb3Provider(options: ICreateOrLoadWalletProps) {
     //Options will have 2 variables (wallet id and passphrase)
-    let web3
-    let ks
+    let web3: Web3
+    let ks: any
     let account = await this.getAccount()
 
-    web3 = new Web3(options.rpcUrl)
+    web3 = getWeb3(options.rpcUrl)
     //open an existing wallet
     ks = account.get('keystores').find((w) => w.walletId === options.walletId)
     if (!ks) throw new Error('No wallet selected')
@@ -760,7 +759,7 @@ export class Wallet {
           },
         })
         .exec()
-        return account
+      return account
     } catch (e) {
       return e
     }
@@ -814,4 +813,10 @@ export class Wallet {
 
     return updated
   }
+
+  /**
+   * @deprecated This method is only used to be able to compile tests.
+   * Please ignore.
+   */
+  async initialize(password: string) { }
 }
