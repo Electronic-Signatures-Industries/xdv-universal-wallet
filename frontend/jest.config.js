@@ -1,6 +1,6 @@
 module.exports = {
   displayName: {
-    name: "Web Frontend",
+    name: "Frontend",
     color: "magentaBright"
   },
   moduleNameMapper: {
