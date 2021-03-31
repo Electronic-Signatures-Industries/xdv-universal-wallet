@@ -1,6 +1,4 @@
-import type { Config } from '@jest/types';
-
-export default async (): Promise<Config.InitialOptions> => ({
+module.exports = {
   displayName: {
     name: "Web Frontend",
     color: "magentaBright"
@@ -9,7 +7,7 @@ export default async (): Promise<Config.InitialOptions> => ({
     "\\.(css|less)$": "identity-obj-proxy"
   },
   roots: [
-    "<rootDir>/pages"
+    "<rootDir>"
   ],
   testMatch: [
     "**/__tests__/**/*.+(ts|tsx|js)",
@@ -17,5 +15,10 @@ export default async (): Promise<Config.InitialOptions> => ({
   ],
   transform: {
     "^.+\\.(ts|tsx)$": "ts-jest"
+  },
+  globals: {
+    'ts-jest': {
+      "tsconfig": "./tsconfig.jest.json"
+    }
   }
-});
+};

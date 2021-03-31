@@ -1,6 +1,4 @@
-import type { Config } from '@jest/types';
-
-export default async (): Promise<Config.InitialOptions> => ({
+module.exports = {
   displayName: {
     name: "Core Module",
     color: 'blueBright'
@@ -15,4 +13,4 @@ export default async (): Promise<Config.InitialOptions> => ({
   transform: {
     "^.+\\.(ts|tsx)$": "ts-jest"
   }
-});
+};

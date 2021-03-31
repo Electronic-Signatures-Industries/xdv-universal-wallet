@@ -1,5 +1,5 @@
 import React from 'react'
-import Index from "./index";
+import Index from "../pages/index";
 import { create } from "react-test-renderer";
 
 describe('<Index />', () => {
