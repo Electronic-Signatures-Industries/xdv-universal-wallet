@@ -1,6 +1,9 @@
 {
   "name": "@xdvplatform/universal-wallet-frontend",
   "version": "0.1.0",
+  "author": "Roberto E. Zubieta <zubieta.roberto.e@gmail.com> (poroto.com.pa)",
+  "license": "MIT",
+  "private": "true",
   "scripts": {
     "test": "jest .",
     "dev": "next dev",

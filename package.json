@@ -8,6 +8,12 @@
     "universal wallet"
   ],
   "author": "IFESA",
+  "contributors": [
+    "Rogelio Morrel <molekilla@gmail.com>",
+    "Patricia Carrillo (https://github.com/patypo)",
+    "Roberto E. Zubieta <zubieta.roberto.e@gmail.com> (poroto.com.pa)"
+  ],
+  "private": "true",
   "license": "MIT",
   "repository": {
     "url": "https://github.com/Electronic-Signatures-Industries/xdv-universal-wallet"
