@@ -1,6 +1,6 @@
 module.exports = {
   displayName: {
-    name: "Core Module",
+    name: "Core",
     color: 'blueBright'
   },
   roots: [

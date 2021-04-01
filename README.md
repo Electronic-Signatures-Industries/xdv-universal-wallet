@@ -3,9 +3,20 @@ XDV Universal Wallet
 
 Creates a 3ID protocol enabled Ed25519 or Web3 provider
 
+## Quickstart
+
+1. This repository uses NPM Workspaces.
+1. On the root path, install all modules: `npm install`
+1. To compile a new version of the Core Module: `npm run build --workspace core`
+1. To run the NextJS frontend: `npm run dev --workspace frontend`
+1. To run tests on all modules: `npm run test`
+1. To build a production version of the NextJS frontend: `npm run build --workspace frontend`
+
 ## Example
 
 ```typescript
+    import { Wallet } from "@xdvplatform/universal-wallet-core";
+
     const did = await Wallet.create3IDEd25519({
       passphrase: 'abcdef123456',
     })
