@@ -1,7 +1,7 @@
-import React from 'react';
-import Document, { Html, Head, Main, NextScript } from 'next/document';
-import { ServerStyleSheets, ThemeProvider } from '@material-ui/core/styles';
-import { theme } from '../styles/theme';
+import React from "react"
+import Document, { Html, Head, Main, NextScript } from "next/document"
+import { ServerStyleSheets, ThemeProvider } from "@material-ui/core/styles"
+import { theme } from "../styles/theme"
 
 /** Taken from: https://github.com/mui-org/material-ui/tree/master/examples/nextjs */
 export default class MyDocument extends Document {
@@ -23,7 +23,7 @@ export default class MyDocument extends Document {
           </body>
         </Html>
       </ThemeProvider>
-    );
+    )
   }
 }
 
@@ -53,19 +53,22 @@ MyDocument.getInitialProps = async (ctx) => {
   // 4. page.render
 
   // Render app and page and get the context of the page with collected side effects.
-  const sheets = new ServerStyleSheets();
-  const originalRenderPage = ctx.renderPage;
+  const sheets = new ServerStyleSheets()
+  const originalRenderPage = ctx.renderPage
 
   ctx.renderPage = () =>
     originalRenderPage({
       enhanceApp: (App) => (props) => sheets.collect(<App {...props} />),
-    });
+    })
 
-  const initialProps = await Document.getInitialProps(ctx);
+  const initialProps = await Document.getInitialProps(ctx)
 
   return {
     ...initialProps,
     // Styles fragment is rendered after the app and page rendering finish.
-    styles: [...React.Children.toArray(initialProps.styles), sheets.getStyleElement()],
-  };
-};
+    styles: [
+      ...React.Children.toArray(initialProps.styles),
+      sheets.getStyleElement(),
+    ],
+  }
+}

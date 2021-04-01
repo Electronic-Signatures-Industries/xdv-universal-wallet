@@ -1,7 +1,7 @@
-import React from 'react'
-import { Menu as MenuIcon } from "@material-ui/icons";
-import { AppBar, Toolbar, IconButton, Typography } from "@material-ui/core";
-import { makeStyles } from "@material-ui/core/styles";
+import React from "react"
+import { Menu as MenuIcon } from "@material-ui/icons"
+import { AppBar, Toolbar, IconButton, Typography } from "@material-ui/core"
+import { makeStyles } from "@material-ui/core/styles"
 
 const useStyles = makeStyles((theme) => ({
   menuButton: {
@@ -13,12 +13,17 @@ const useStyles = makeStyles((theme) => ({
 }))
 
 export function ActionBar() {
-  const classes = useStyles();
+  const classes = useStyles()
 
   return (
     <AppBar position="static">
       <Toolbar>
-        <IconButton edge="start" className={classes.menuButton} color="inherit" aria-label="menu">
+        <IconButton
+          edge="start"
+          className={classes.menuButton}
+          color="inherit"
+          aria-label="menu"
+        >
           <MenuIcon />
         </IconButton>
         <Typography variant="h6" className={classes.title}>

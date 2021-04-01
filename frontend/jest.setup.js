@@ -1,1 +1,1 @@
-jest.mock('ipfs-http-client')
+jest.mock("ipfs-http-client")
