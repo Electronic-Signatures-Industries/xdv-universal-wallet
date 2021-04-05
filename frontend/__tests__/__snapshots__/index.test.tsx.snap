@@ -10,7 +10,7 @@ exports[`<Index /> should match snapshot 1`] = `
     >
       <button
         aria-label="menu"
-        className="MuiButtonBase-root MuiIconButton-root makeStyles-menuButton-1 MuiIconButton-colorInherit MuiIconButton-edgeStart"
+        className="MuiButtonBase-root MuiIconButton-root makeStyles-menuButton-2 MuiIconButton-colorInherit MuiIconButton-edgeStart"
         disabled={false}
         onBlur={[Function]}
         onDragLeave={[Function]}
@@ -42,34 +42,144 @@ exports[`<Index /> should match snapshot 1`] = `
         </span>
       </button>
       <h6
-        className="MuiTypography-root makeStyles-title-2 MuiTypography-h6"
+        className="MuiTypography-root makeStyles-title-3 MuiTypography-h6"
       >
         XDV Universal Wallet
       </h6>
     </div>
   </header>
-  <button
-    className="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textPrimary"
-    disabled={false}
-    onBlur={[Function]}
-    onDragLeave={[Function]}
-    onFocus={[Function]}
-    onKeyDown={[Function]}
-    onKeyUp={[Function]}
-    onMouseDown={[Function]}
-    onMouseLeave={[Function]}
-    onMouseUp={[Function]}
-    onTouchEnd={[Function]}
-    onTouchMove={[Function]}
-    onTouchStart={[Function]}
-    tabIndex={0}
-    type="button"
+  <div
+    className="MuiContainer-root makeStyles-container-1 MuiContainer-maxWidthLg"
   >
-    <span
-      className="MuiButton-label"
+    <div
+      className="MuiPaper-root MuiCard-root MuiPaper-elevation1 MuiPaper-rounded"
     >
-      Hello World
-    </span>
-  </button>
+      <div
+        className="MuiCardHeader-root"
+      >
+        <div
+          className="MuiCardHeader-content"
+        >
+          <span
+            className="MuiTypography-root MuiCardHeader-title MuiTypography-h5 MuiTypography-displayBlock"
+          >
+            Unlock Wallet
+          </span>
+        </div>
+      </div>
+      <div
+        className="MuiCardContent-root makeStyles-cardContent-4"
+      >
+        <div
+          className="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
+        >
+          <label
+            className="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-outlined"
+            data-shrink={false}
+          >
+            Wallet Account Name
+          </label>
+          <div
+            className="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-fullWidth MuiInputBase-formControl"
+            onClick={[Function]}
+          >
+            <input
+              aria-invalid={false}
+              autoFocus={false}
+              className="MuiInputBase-input MuiOutlinedInput-input"
+              disabled={false}
+              onAnimationStart={[Function]}
+              onBlur={[Function]}
+              onChange={[Function]}
+              onFocus={[Function]}
+              required={false}
+              type="text"
+              value=""
+            />
+            <fieldset
+              aria-hidden={true}
+              className="PrivateNotchedOutline-root-5 MuiOutlinedInput-notchedOutline"
+            >
+              <legend
+                className="PrivateNotchedOutline-legendLabelled-7"
+              >
+                <span>
+                  Wallet Account Name
+                </span>
+              </legend>
+            </fieldset>
+          </div>
+        </div>
+        <div
+          className="MuiFormControl-root MuiTextField-root MuiFormControl-fullWidth"
+        >
+          <label
+            className="MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-outlined"
+            data-shrink={false}
+          >
+            Wallet Passphrase
+          </label>
+          <div
+            className="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-fullWidth MuiInputBase-formControl"
+            onClick={[Function]}
+          >
+            <input
+              aria-invalid={false}
+              autoFocus={false}
+              className="MuiInputBase-input MuiOutlinedInput-input"
+              disabled={false}
+              onAnimationStart={[Function]}
+              onBlur={[Function]}
+              onChange={[Function]}
+              onFocus={[Function]}
+              required={false}
+              type="password"
+              value=""
+            />
+            <fieldset
+              aria-hidden={true}
+              className="PrivateNotchedOutline-root-5 MuiOutlinedInput-notchedOutline"
+            >
+              <legend
+                className="PrivateNotchedOutline-legendLabelled-7"
+              >
+                <span>
+                  Wallet Passphrase
+                </span>
+              </legend>
+            </fieldset>
+          </div>
+        </div>
+      </div>
+      <div
+        className="MuiCardActions-root MuiCardActions-spacing"
+      >
+        <button
+          className="MuiButtonBase-root MuiButton-root MuiButton-text MuiButton-textPrimary"
+          disabled={false}
+          onBlur={[Function]}
+          onClick={[Function]}
+          onDragLeave={[Function]}
+          onFocus={[Function]}
+          onKeyDown={[Function]}
+          onKeyUp={[Function]}
+          onMouseDown={[Function]}
+          onMouseLeave={[Function]}
+          onMouseUp={[Function]}
+          onTouchEnd={[Function]}
+          onTouchMove={[Function]}
+          onTouchStart={[Function]}
+          tabIndex={0}
+          type="button"
+        >
+          <span
+            className="MuiButton-label"
+          >
+            Unlock or Create Wallet
+          </span>
+        </button>
+      </div>
+    </div>
+  </div>
 </main>
 `;
