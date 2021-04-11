@@ -32,7 +32,7 @@ export interface IQueryProps {
 // https://w3c-ccg.github.io/universal-wallet-interop-spec
 export interface IUniversalWallet {
   import(mnemonic: string, passphrase: string): Promise<object>
-  export(walletId: string, passphrase: string): Promise<object>
+  export(walletId: string, passphrase: string): Promise<string>
   unlock(walletId: string, passphrase: string): Promise<object>
   lock(walletId: string): Promise<object>
   signRaw(buf: Uint8Array, options: ISignerProps): Promise<object>
