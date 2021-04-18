@@ -1,4 +1,6 @@
 import EthrDID from 'ethr-did'
+import * as blsKeygen from 'bls12-381-keygen'
+import * as bls from 'noble-bls12-381'
 import { ec, eddsa } from 'elliptic'
 import { BigNumber, ethers } from 'ethers'
 import { getMasterKeyFromSeed } from 'ed25519-hd-key'
@@ -9,7 +11,7 @@ import { JWTService } from './JWTService'
 import { KeyConvert } from './KeyConvert'
 import { LDCryptoTypes } from './LDCryptoTypes'
 import { from, Subject, throwError } from 'rxjs'
-import { mnemonicToSeed } from 'ethers/lib/utils'
+import { arrayify, mnemonicToSeed } from 'ethers/lib/utils'
 import Web3 from 'web3'
 import { DIDManager } from '../3id/DIDManager'
 import { DID } from 'dids'
@@ -25,18 +27,31 @@ import { createRxDatabase, addRxPlugin } from 'rxdb/plugins/core'
 import moment from 'moment'
 import { EthereumAuthProvider } from '3id-connect'
 
+import * as PouchdbAdapterIdb from 'pouchdb-adapter-idb'
+import * as PouchdbAdapterMemory from 'pouchdb-adapter-memory'
+import { RxDBEncryptionPlugin } from 'rxdb/plugins/encryption'
+import { RxDBValidatePlugin } from 'rxdb/plugins/validate'
+import { RxDBUpdatePlugin } from 'rxdb/plugins/update'
+import { getWeb3 } from '../utils/web3factory'
+addRxPlugin(RxDBDevModePlugin)
+
 export type AlgorithmTypeString = keyof typeof AlgorithmType
 export enum AlgorithmType {
   RSA,
   ES256K,
   P256,
   ED25519,
-  BLS,
+  BLS_EIP2333,
   P256_JWK_PUBLIC,
   ED25519_JWK_PUBLIC,
   ES256K_JWK_PUBLIC,
   RSA_JWK_PUBLIC,
   RSA_PEM_PUBLIC,
+}
+
+export interface BlsEip2333 {
+  publicKey: Uint8Array
+  privateKey: Uint8Array
 }
 
 export class WalletOptions {
@@ -72,6 +87,7 @@ export interface ICreateOrLoadWalletProps {
 export interface KeyStoreModel {
   ES256K: any
   P256: any
+  BLS_EIP2333: any
   ED25519: any
 }
 
@@ -88,7 +104,8 @@ export class KeyStore implements KeyStoreModel {
   public ED25519: any
   public ES256K: any
   public P256: any
-  constructor() { }
+  public BLS_EIP2333: any
+  constructor() {}
 }
 
 // Main data repository
@@ -160,15 +177,6 @@ export const XDVWalletSchema = {
   encrypted: ['keystores'],
 }
 
-import * as PouchdbAdapterIdb from 'pouchdb-adapter-idb'
-import * as PouchdbAdapterMemory from 'pouchdb-adapter-memory'
-import { RxDBEncryptionPlugin } from 'rxdb/plugins/encryption'
-import { RxDBValidatePlugin } from 'rxdb/plugins/validate'
-import { RxDBUpdatePlugin } from 'rxdb/plugins/update'
-import { Console } from 'console'
-import { getWeb3 } from '../utils/web3factory'
-addRxPlugin(RxDBDevModePlugin)
-
 /**
  * XDV Wallet for DID and VC use cases
  */
@@ -217,22 +225,20 @@ export class Wallet {
         adapter: this.isWeb ? 'idb' : 'memory',
         multiInstance: true,
         password: passphrase,
-        ignoreDuplicate: true
+        ignoreDuplicate: true,
       })
 
-      return this;
+      return this
     } catch (e) {
       // already exists
-      throw e;
+      throw e
     }
-
   }
   /**
    * Enrolls account, returns false if already exists, otherwise account model
    * @param options create or load wallet options, password must be at least 12 chars
    */
   async enrollAccount(options: ICreateOrLoadWalletProps) {
-
     await this.db.addCollections({
       accounts: {
         schema: XDVWalletSchema,
@@ -256,22 +262,6 @@ export class Wallet {
 
   async close() {
     await this.db.destroy()
-  }
-
-  // /**
-  //  * Gets a public key from storage
-  //  * @param id
-  //  * @param algorithm
-  //  */
-  // public async getPublicKey(id: string) {
-  //   const content = await this.db.get(id)
-  //   return await JWK.asKey(JSON.parse(content.key), 'jwk')
-  // }
-
-  public async getUniversalWalletKey(alg: string) {
-    const jwk = JWK.createKey('oct', 256, {
-      alg,
-    })
   }
 
   /**
@@ -415,31 +405,41 @@ export class Wallet {
     } as unknown) as XDVUniversalProvider
   }
 
-  // /**
-  //  * Sets a public key in storage
-  //  * @param id
-  //  * @param algorithm
-  //  * @param value
-  //  */
-  // public async setPublicKey(
-  //   id: string,
-  //   algorithm: AlgorithmTypeString,
-  //   value: object,
-  // ) {
-  //   if (
-  //     [
-  //       AlgorithmType.P256_JWK_PUBLIC,
-  //       AlgorithmType.RSA_JWK_PUBLIC,
-  //       AlgorithmType.ED25519_JWK_PUBLIC,
-  //       AlgorithmType.ES256K_JWK_PUBLIC,
-  //     ].includes(AlgorithmType[algorithm])
-  //   ) {
-  //     await this.db.put({
-  //       _id: id,
-  //       key: value,
-  //     })
-  //   }
-  // }
+  // TODO: Should find existing BLS and sign message
+  async blsSign(message: Uint8Array) {
+    return null
+  }
+
+  // TODO: Verify
+  // https://github.com/paulmillr/noble-bls12-381
+
+  // BLS Multisig
+  // TODO: Document
+  async createMultiSig(
+    sharedSignMessages: [Uint8Array | string],
+    publicKeys?: [Uint8Array | string],
+  ) {
+    let aggregatedPublicKey
+    if (aggregatedPublicKey) {
+      aggregatedPublicKey = bls.aggregatePublicKeys(publicKeys)
+    }
+    const aggregatedSignatures = bls.aggregateSignatures(sharedSignMessages)
+
+    return {
+      aggregatedPublicKey,
+      aggregatedSignatures,
+    }
+  }
+
+  // TODO
+  async verifyAggregatedPubkeys() {
+    // await bls.verify(aggSig, message, aggPubs)
+  }
+
+  //  TODO
+  async verifyBatch() {
+    // await bls.verify(aggSig, messages, pubs)
+  }
 
   /**
    * Adds a set of ES256K and ED25519 Wallets
@@ -484,13 +484,16 @@ export class Wallet {
       false,
     )
 
+    // Multisig, Ethereum2, Filecoin
+    const blsKp = this.getBlsEip2333(mnemonic) as BlsEip2333
+    keystores.BLS_EIP2333 = blsKp.privateKey
+
     const keystore: KeystoreDbModel = {
       walletId: id,
       keypairs: keystores,
       mnemonic: mnemonic,
       keypairExports: keyExports,
     }
-
 
     const ksArray = account.get('keystores')
     const row = await account.update({
@@ -722,6 +725,21 @@ export class Wallet {
     return node
   }
 
+  // ------------------------------------------------------------------
+  // Algorithms supported: BLS EIP-2333, EdDSA, ECDSA secp256k1, p256
+  // ------------------------------------------------------------------
+  public getBlsEip2333(mnemonic: string): BlsEip2333 {
+    const path = 'm/12381/3600/0/0/0'
+    const pk = blsKeygen.deriveSeedTree(
+      Buffer.from(mnemonicToSeed(mnemonic)),
+      path,
+    )
+
+    return {
+      publicKey: bls.getPublicKey(pk),
+      privateKey: pk,
+    }
+  }
   /**
    * Gets EdDSA key pair
    */
@@ -763,7 +781,6 @@ export class Wallet {
     } catch (e) {
       return e
     }
-    return account
   }
 
   /**
@@ -818,5 +835,5 @@ export class Wallet {
    * @deprecated This method is only used to be able to compile tests.
    * Please ignore.
    */
-  async initialize(password: string) { }
+  async initialize(password: string) {}
 }
