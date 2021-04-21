@@ -11,7 +11,7 @@ import { JWTService } from './JWTService'
 import { KeyConvert } from './KeyConvert'
 import { LDCryptoTypes } from './LDCryptoTypes'
 import { from, Subject, throwError } from 'rxjs'
-import { arrayify, mnemonicToSeed } from 'ethers/lib/utils'
+import { arrayify, hexlify, mnemonicToSeed } from 'ethers/lib/utils'
 import Web3 from 'web3'
 import { DIDManager } from '../3id/DIDManager'
 import { DID } from 'dids'
@@ -405,9 +405,22 @@ export class Wallet {
     } as unknown) as XDVUniversalProvider
   }
 
-  // TODO: Should find existing BLS and sign message
-  async blsSign(message: Uint8Array) {
-    return null
+  /**
+   * Signs message with a BLS private key given a wallet id
+   * @param options 
+   * @param message 
+   * @returns 
+   */
+  async blsSign(options: ICreateOrLoadWalletProps, message: Uint8Array) {
+    let ks
+    let account = await this.getAccount()
+
+    //open an existing wallet
+    ks = account.get('keystores').find((w) => w.walletId === options.walletId)
+    if (!ks) throw new Error('No wallet selected')
+
+    const kp = arrayify(ks.keypairs.BLS_EIP2333);
+    return bls.sign(message, kp, null);
   }
 
   // TODO: Verify
@@ -486,7 +499,7 @@ export class Wallet {
 
     // Multisig, Ethereum2, Filecoin
     const blsKp = this.getBlsEip2333(mnemonic) as BlsEip2333
-    keystores.BLS_EIP2333 = blsKp.privateKey
+    keystores.BLS_EIP2333 = Buffer.from(blsKp.privateKey).toString('hex');
 
     const keystore: KeystoreDbModel = {
       walletId: id,
@@ -531,7 +544,7 @@ export class Wallet {
       const kp = new ec('secp256k1')
       return kp.keyFromPrivate(ks.keypairs.ES256K) as ec.KeyPair
     }
-  }
+  }n
 
   /**
    * Get private key exports
