@@ -433,7 +433,7 @@ export class Wallet {
     publicKeys?: [Uint8Array | string],
   ) {
     let aggregatedPublicKey
-    if (aggregatedPublicKey) {
+    if (publicKeys) {
       aggregatedPublicKey = bls.aggregatePublicKeys(publicKeys)
     }
     const aggregatedSignatures = bls.aggregateSignatures(sharedSignMessages)
