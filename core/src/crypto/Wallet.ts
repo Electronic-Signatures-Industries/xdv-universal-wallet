@@ -428,25 +428,24 @@ export class Wallet {
 
   // BLS Multisig
   // TODO: Document
-  async createMultiSig(
-    sharedSignMessages: [Uint8Array | string],
-    publicKeys?: [Uint8Array | string],
-  ) {
-    let aggregatedPublicKey
-    if (publicKeys) {
-      aggregatedPublicKey = bls.aggregatePublicKeys(publicKeys)
-    }
-    const aggregatedSignatures = bls.aggregateSignatures(sharedSignMessages)
 
-    return {
-      aggregatedPublicKey,
-      aggregatedSignatures,
-    }
+  async getBlsPublicKey(options: ICreateOrLoadWalletProps, message: Uint8Array){
+    let ks
+    let account = await this.getAccount()
+
+    //open an existing wallet
+    ks = account.get('keystores').find((w) => w.walletId === options.walletId)
+    if (!ks) throw new Error('No wallet selected')
+
+    const kp = arrayify(ks.keypairs.BLS_EIP2333);
+    return bls.getPublicKey(kp);
   }
 
-  // TODO
-  async verifyAggregatedPubkeys() {
-    // await bls.verify(aggSig, message, aggPubs)
+  async verifyAggregatedPubkeys(signatures: String[], message: String[], publicKeys: String[]) {
+    const aggregatedPublicKey = bls.aggregatePublicKeys(publicKeys)
+    const aggregatedSignatures = bls.aggregateSignatures(signatures)
+
+    return bls.verify(aggregatedSignatures, message, aggregatedPublicKey)
   }
 
   //  TODO

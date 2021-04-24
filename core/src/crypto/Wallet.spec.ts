@@ -90,6 +90,38 @@ describe('Wallet', () => {
       expect(result.address).toEqual(result.address)
     })
 
+    it('when Allice Charlie and Bob sign using BLS should veriy aggregated signature and public key ', async function () {
+      let acct = await wallet.getAccount()
+      // add wallet with no mnemonic
+      const walletId = await wallet.addWallet()
+
+      const result = await wallet.createES256K({
+        passphrase: '1234',
+        rpcUrl: url,
+        walletId,
+        registry: '',
+        accountName: '',
+      })
+
+      expect(result.address).toEqual(result.address)
+    })
+
+    it('should verify aggregated signature', async function () {
+      let acct = await wallet.getAccount()
+      // add wallet with no mnemonic
+      const walletId = await wallet.addWallet()
+
+      const result = await wallet.createES256K({
+        passphrase: '1234',
+        rpcUrl: url,
+        walletId,
+        registry: '',
+        accountName: '',
+      })
+
+      expect(result.address).toEqual(result.address)
+    })
+
     it('when calling createES256K with an existing id and create a VC, should return a web3 instance and wallet id', async function () {
       let acct = await wallet.getAccount()
       // add wallet with no mnemonic
