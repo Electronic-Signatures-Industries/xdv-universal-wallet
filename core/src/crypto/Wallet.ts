@@ -441,11 +441,18 @@ export class Wallet {
     return bls.getPublicKey(kp);
   }
 
-  async verifyAggregatedPubkeys(signatures: String[], message: String[], publicKeys: String[]) {
+  /**
+   * Verifies aggregated signatures
+   * @param signatures \
+   * @param message 
+   * @param publicKeys 
+   * @returns 
+   */
+  async verifyAggregatedPubkeys(signatures: any[], message: any, publicKeys: any[]) {
     const aggregatedPublicKey = bls.aggregatePublicKeys(publicKeys)
     const aggregatedSignatures = bls.aggregateSignatures(signatures)
 
-    return bls.verify(aggregatedSignatures, message, aggregatedPublicKey)
+    return bls.verify(message, aggregatedPublicKey, aggregatedSignatures, null);
   }
 
   //  TODO
