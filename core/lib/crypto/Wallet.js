@@ -2,6 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Wallet = exports.XDVWalletSchema = exports.KeyStore = exports.WalletOptions = exports.AlgorithmType = void 0;
 const tslib_1 = require("tslib");
+const blsKeygen = tslib_1.__importStar(require("bls12-381-keygen"));
+const bls = tslib_1.__importStar(require("noble-bls12-381"));
 const elliptic_1 = require("elliptic");
 const ethers_1 = require("ethers");
 const ed25519_hd_key_1 = require("ed25519-hd-key");
@@ -20,13 +22,20 @@ const eth_crypto_1 = tslib_1.__importDefault(require("eth-crypto"));
 const dev_mode_1 = require("rxdb/plugins/dev-mode");
 const core_1 = require("rxdb/plugins/core");
 const moment_1 = tslib_1.__importDefault(require("moment"));
+const PouchdbAdapterIdb = tslib_1.__importStar(require("pouchdb-adapter-idb"));
+const PouchdbAdapterMemory = tslib_1.__importStar(require("pouchdb-adapter-memory"));
+const encryption_1 = require("rxdb/plugins/encryption");
+const validate_1 = require("rxdb/plugins/validate");
+const update_1 = require("rxdb/plugins/update");
+const web3factory_1 = require("../utils/web3factory");
+core_1.addRxPlugin(dev_mode_1.RxDBDevModePlugin);
 var AlgorithmType;
 (function (AlgorithmType) {
     AlgorithmType[AlgorithmType["RSA"] = 0] = "RSA";
     AlgorithmType[AlgorithmType["ES256K"] = 1] = "ES256K";
     AlgorithmType[AlgorithmType["P256"] = 2] = "P256";
     AlgorithmType[AlgorithmType["ED25519"] = 3] = "ED25519";
-    AlgorithmType[AlgorithmType["BLS"] = 4] = "BLS";
+    AlgorithmType[AlgorithmType["BLS_EIP2333"] = 4] = "BLS_EIP2333";
     AlgorithmType[AlgorithmType["P256_JWK_PUBLIC"] = 5] = "P256_JWK_PUBLIC";
     AlgorithmType[AlgorithmType["ED25519_JWK_PUBLIC"] = 6] = "ED25519_JWK_PUBLIC";
     AlgorithmType[AlgorithmType["ES256K_JWK_PUBLIC"] = 7] = "ES256K_JWK_PUBLIC";
@@ -105,13 +114,6 @@ exports.XDVWalletSchema = {
     },
     encrypted: ['keystores'],
 };
-const PouchdbAdapterIdb = tslib_1.__importStar(require("pouchdb-adapter-idb"));
-const PouchdbAdapterMemory = tslib_1.__importStar(require("pouchdb-adapter-memory"));
-const encryption_1 = require("rxdb/plugins/encryption");
-const validate_1 = require("rxdb/plugins/validate");
-const update_1 = require("rxdb/plugins/update");
-const web3factory_1 = require("../utils/web3factory");
-core_1.addRxPlugin(dev_mode_1.RxDBDevModePlugin);
 /**
  * XDV Wallet for DID and VC use cases
  */
@@ -153,7 +155,7 @@ class Wallet {
                 adapter: this.isWeb ? 'idb' : 'memory',
                 multiInstance: true,
                 password: passphrase,
-                ignoreDuplicate: true
+                ignoreDuplicate: true,
             });
             return this;
         }
@@ -188,20 +190,6 @@ class Wallet {
     }
     async close() {
         await this.db.destroy();
-    }
-    // /**
-    //  * Gets a public key from storage
-    //  * @param id
-    //  * @param algorithm
-    //  */
-    // public async getPublicKey(id: string) {
-    //   const content = await this.db.get(id)
-    //   return await JWK.asKey(JSON.parse(content.key), 'jwk')
-    // }
-    async getUniversalWalletKey(alg) {
-        const jwk = node_jose_1.JWK.createKey('oct', 256, {
-            alg,
-        });
     }
     /**
      * Creates an universal wallet for ES256K
@@ -241,11 +229,9 @@ class Wallet {
     }
     /**
      * Creates an universal wallet for Ed25519
-     * @param nodeurl EVM Node
      * @param options { passphrase, walletid }
      */
     async createEd25519(options) {
-        let wallet = new Wallet();
         let ks;
         let account = await this.getAccount(options.passphrase);
         //open an existing wallet
@@ -268,7 +254,6 @@ class Wallet {
      * @param options { passphrase, walletid, registry, rpcUrl }
      */
     async createWeb3Provider(options) {
-        //Options will have 2 variables (wallet id and passphrase)
         let web3;
         let ks;
         let account = await this.getAccount();
@@ -304,31 +289,64 @@ class Wallet {
             address,
         };
     }
-    // /**
-    //  * Sets a public key in storage
-    //  * @param id
-    //  * @param algorithm
-    //  * @param value
-    //  */
-    // public async setPublicKey(
-    //   id: string,
-    //   algorithm: AlgorithmTypeString,
-    //   value: object,
-    // ) {
-    //   if (
-    //     [
-    //       AlgorithmType.P256_JWK_PUBLIC,
-    //       AlgorithmType.RSA_JWK_PUBLIC,
-    //       AlgorithmType.ED25519_JWK_PUBLIC,
-    //       AlgorithmType.ES256K_JWK_PUBLIC,
-    //     ].includes(AlgorithmType[algorithm])
-    //   ) {
-    //     await this.db.put({
-    //       _id: id,
-    //       key: value,
-    //     })
-    //   }
-    // }
+    // =========================================
+    // BLS Multisig
+    // =========================================
+    /**
+     * Signs message with a BLS private key given a wallet id
+     * @param options
+     * @param message
+     * @returns Promise
+     */
+    async aggregateSign(options, message) {
+        let ks;
+        let account = await this.getAccount();
+        // open an existing wallet
+        ks = account.get('keystores').find((w) => w.walletId === options.walletId);
+        if (!ks)
+            throw new Error('No wallet selected');
+        const kp = utils_1.arrayify(ks.keypairs.BLS_EIP2333);
+        return bls.sign(message, kp, null);
+    }
+    /**
+     * Gets BLS public key
+     * @param options
+     * @returns UInt8Array
+     */
+    async getBlsPublicKey(options) {
+        let ks;
+        let account = await this.getAccount();
+        //open an existing wallet
+        ks = account.get('keystores').find((w) => w.walletId === options.walletId);
+        if (!ks)
+            throw new Error('No wallet selected');
+        const kp = utils_1.arrayify(ks.keypairs.BLS_EIP2333);
+        return bls.getPublicKey(kp);
+    }
+    /**
+     * Verifies aggregated signatures, one message signed by many
+     * @param signatures An array of signatures
+     * @param message A single message
+     * @param publicKeys An array of public keys
+     * @returns Promise
+     */
+    async verifyAggregatedPubkeys(signatures, message, publicKeys) {
+        const aggregatedPublicKey = bls.aggregatePublicKeys(publicKeys);
+        const aggregatedSignatures = bls.aggregateSignatures(signatures);
+        return bls.verify(message, aggregatedPublicKey, aggregatedSignatures, null);
+    }
+    /**
+     * Verifies aggregated signatures, many messages signed by many
+     * @param signatures An array of signatures
+     * @param message An array of messages
+     * @param publicKeys An array of public keys
+     * @returns Promise
+     */
+    async verifyBatch(signatures, messages, publicKeys) {
+        const aggregatedSignatures = bls.aggregateSignatures(signatures);
+        return await bls.verifyMultiple(messages, publicKeys, aggregatedSignatures, null);
+    }
+    // ========================================================
     /**
      * Adds a set of ES256K and ED25519 Wallets
      * @param options
@@ -361,6 +379,9 @@ class Wallet {
         keyExports.ES256K.ldJsonPublic = await KeyConvert_1.KeyConvert.createLinkedDataJsonFormat(LDCryptoTypes_1.LDCryptoTypes.JWK, 
         // @ts-ignore
         { publicJwk: JSON.parse(keyExports.ES256K.ldSuite.publicKeyJwk) }, false);
+        // Multisig, Ethereum2, Filecoin
+        const blsKp = this.getBlsEip2333(mnemonic);
+        keystores.BLS_EIP2333 = Buffer.from(blsKp.privateKey).toString('hex');
         const keystore = {
             walletId: id,
             keypairs: keystores,
@@ -546,6 +567,17 @@ class Wallet {
         const node = ethers_1.ethers.utils.HDNode.fromMnemonic(mnemonic).derivePath(path);
         return node;
     }
+    // ------------------------------------------------------------------
+    // Algorithms supported: BLS EIP-2333, EdDSA, ECDSA secp256k1, p256
+    // ------------------------------------------------------------------
+    getBlsEip2333(mnemonic) {
+        const path = 'm/12381/3600/0/0/0';
+        const pk = blsKeygen.deriveSeedTree(Buffer.from(utils_1.mnemonicToSeed(mnemonic)), path);
+        return {
+            publicKey: bls.getPublicKey(pk),
+            privateKey: pk,
+        };
+    }
     /**
      * Gets EdDSA key pair
      */
@@ -584,7 +616,6 @@ class Wallet {
         catch (e) {
             return e;
         }
-        return account;
     }
     /**
      * Sets account lock

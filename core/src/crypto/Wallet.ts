@@ -402,13 +402,16 @@ export class Wallet {
     } as unknown) as XDVUniversalProvider
   }
 
+  // =========================================
+  // BLS Multisig
+  // =========================================
   /**
    * Signs message with a BLS private key given a wallet id
    * @param options 
    * @param message 
-   * @returns 
+   * @returns Promise
    */
-  async blsSign(options: ICreateOrLoadWalletProps, message: Uint8Array) {
+  async aggregateSign(options: ICreateOrLoadWalletProps, message: Uint8Array) {
     let ks
     let account = await this.getAccount()
 
@@ -420,16 +423,11 @@ export class Wallet {
     return bls.sign(message, kp, null);
   }
 
-  // TODO: Verify
-  // https://github.com/paulmillr/noble-bls12-381
-
-  // BLS Multisig
-  // TODO: Document
 
   /**
    * Gets BLS public key
    * @param options 
-   * @returns 
+   * @returns UInt8Array
    */
   async getBlsPublicKey(options: ICreateOrLoadWalletProps){
     let ks
@@ -444,11 +442,11 @@ export class Wallet {
   }
 
   /**
-   * Verifies aggregated signatures
-   * @param signatures \
-   * @param message 
-   * @param publicKeys 
-   * @returns 
+   * Verifies aggregated signatures, one message signed by many
+   * @param signatures An array of signatures
+   * @param message A single message
+   * @param publicKeys An array of public keys
+   * @returns Promise
    */
   async verifyAggregatedPubkeys(signatures: any[], message: any, publicKeys: any[]) {
     const aggregatedPublicKey = bls.aggregatePublicKeys(publicKeys)
@@ -457,6 +455,14 @@ export class Wallet {
     return bls.verify(message, aggregatedPublicKey, aggregatedSignatures, null);
   }
 
+
+  /**
+   * Verifies aggregated signatures, many messages signed by many
+   * @param signatures An array of signatures
+   * @param message An array of messages
+   * @param publicKeys An array of public keys
+   * @returns Promise
+   */
   async verifyBatch(signatures: any[], messages: any[], publicKeys: any[]) {
     const aggregatedSignatures = bls.aggregateSignatures(signatures);
     return await bls.verifyMultiple(
@@ -465,8 +471,9 @@ export class Wallet {
       aggregatedSignatures,
       null
     );
-    // await bls.verify(aggSig, messages, pubs)
   }
+
+  // ========================================================
 
   /**
    * Adds a set of ES256K and ED25519 Wallets
