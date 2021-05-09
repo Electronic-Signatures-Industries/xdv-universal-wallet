@@ -277,7 +277,7 @@ export class Wallet {
     if (!ks) throw new Error('No wallet selected')
 
     const kp = new ec('secp256k1')
-    const kpInstance = kp.keyFromPrivate(ks.keypairs.ES256K) as ec.KeyPair
+    const kpInstance = kp.keyFromPrivate(ks.keypairs.ES256K);
     const didManager = new DIDManager()
     const address = toEthereumAddress(kpInstance.getPublic('hex'))
 
@@ -321,11 +321,9 @@ export class Wallet {
 
   /**
    * Creates an universal wallet for Ed25519
-   * @param nodeurl EVM Node
    * @param options { passphrase, walletid }
    */
   async createEd25519(options: ICreateOrLoadWalletProps) {
-    let wallet = new Wallet()
     let ks
     let account = await this.getAccount(options.passphrase)
 
@@ -334,7 +332,7 @@ export class Wallet {
     if (!ks) throw new Error('No wallet selected')
 
     const kp = new eddsa('ed25519')
-    const kpInstance = kp.keyFromSecret(ks.keypairs.ED25519) as eddsa.KeyPair
+    const kpInstance = kp.keyFromSecret(ks.keypairs.ED25519);
     const didManager = new DIDManager()
     const { did, getIssuer } = await didManager.create3ID_Ed25519(kpInstance)
 
@@ -351,7 +349,6 @@ export class Wallet {
    * @param options { passphrase, walletid, registry, rpcUrl }
    */
   async createWeb3Provider(options: ICreateOrLoadWalletProps) {
-    //Options will have 2 variables (wallet id and passphrase)
     let web3: Web3
     let ks: any
     let account = await this.getAccount()
@@ -415,7 +412,7 @@ export class Wallet {
     let ks
     let account = await this.getAccount()
 
-    //open an existing wallet
+    // open an existing wallet
     ks = account.get('keystores').find((w) => w.walletId === options.walletId)
     if (!ks) throw new Error('No wallet selected')
 
@@ -429,7 +426,12 @@ export class Wallet {
   // BLS Multisig
   // TODO: Document
 
-  async getBlsPublicKey(options: ICreateOrLoadWalletProps, message: Uint8Array){
+  /**
+   * Gets BLS public key
+   * @param options 
+   * @returns 
+   */
+  async getBlsPublicKey(options: ICreateOrLoadWalletProps){
     let ks
     let account = await this.getAccount()
 
@@ -455,8 +457,14 @@ export class Wallet {
     return bls.verify(message, aggregatedPublicKey, aggregatedSignatures, null);
   }
 
-  //  TODO
-  async verifyBatch() {
+  async verifyBatch(signatures: any[], messages: any[], publicKeys: any[]) {
+    const aggregatedSignatures = bls.aggregateSignatures(signatures);
+    return await bls.verifyMultiple(
+      messages,
+      publicKeys,
+      aggregatedSignatures,
+      null
+    );
     // await bls.verify(aggSig, messages, pubs)
   }
 
