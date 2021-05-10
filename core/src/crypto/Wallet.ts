@@ -33,7 +33,6 @@ import { RxDBEncryptionPlugin } from 'rxdb/plugins/encryption'
 import { RxDBValidatePlugin } from 'rxdb/plugins/validate'
 import { RxDBUpdatePlugin } from 'rxdb/plugins/update'
 import { getWeb3 } from '../utils/web3factory'
-addRxPlugin(RxDBDevModePlugin)
 
 export type AlgorithmTypeString = keyof typeof AlgorithmType
 export enum AlgorithmType {
