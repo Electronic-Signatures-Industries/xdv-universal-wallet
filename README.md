@@ -1,6 +1,11 @@
 # xdv-universal-wallet
 XDV Universal Wallet
 
+
+## Install
+
+`npm i @xdvplatform/universal-wallet-core`
+
 Creates a 3ID protocol enabled Ed25519 or Web3 provider
 
 ## Quickstart
@@ -43,6 +48,48 @@ Creates a 3ID protocol enabled Ed25519 or Web3 provider
 ## API
 
 ### crypto/Wallet
+
+### BLS Signatures (aggregation)
+
+
+
+#### async aggregateSign(options: any, message: Uint8Array)
+  
+Signs message with a selected wallet id
+
+Parameters
+
+
+* `options.walletid`: A wallet id, set it to load a previously created wallet, otherwise leave empty
+* `messsage`: Uint8Array data to sign
+
+
+Returns a `Promise<Uint8Array>`
+
+#### async getBlsPublicKey(options: any)
+  
+Gets public key with a selected wallet id
+
+Parameters
+
+
+* `options.walletid`: A wallet id, set it to load a previously created wallet, otherwise leave empty
+
+Returns a `Uint8Array`
+
+
+####   async verifyAggregatedPubkeys(signatures: any[], message: any, publicKeys: any[])
+  
+Verifies aggregated signatures, one message signed by many
+
+Returns a `Promise<Uint8Array>`
+
+#### async verifyBatch(signatures: any[], messages: any[], publicKeys: any[])
+  
+Verifies aggregated signatures, many messages signed by many
+
+Returns a `Promise<Uint8Array>`
+
 
 
 #### static async createES256K(options: any)

@@ -28,5 +28,8 @@
   "workspaces": [
     "core",
     "frontend"
-  ]
+  ],
+  "dependencies": {
+    "bls12-381-keygen": "^0.1.2"
+  }
 }

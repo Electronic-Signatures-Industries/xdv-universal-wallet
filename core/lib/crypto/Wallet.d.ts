@@ -13,12 +13,16 @@ export declare enum AlgorithmType {
     ES256K = 1,
     P256 = 2,
     ED25519 = 3,
-    BLS = 4,
+    BLS_EIP2333 = 4,
     P256_JWK_PUBLIC = 5,
     ED25519_JWK_PUBLIC = 6,
     ES256K_JWK_PUBLIC = 7,
     RSA_JWK_PUBLIC = 8,
     RSA_PEM_PUBLIC = 9
+}
+export interface BlsEip2333 {
+    publicKey: Uint8Array;
+    privateKey: Uint8Array;
 }
 export declare class WalletOptions {
     password: string;
@@ -46,6 +50,7 @@ export interface ICreateOrLoadWalletProps {
 export interface KeyStoreModel {
     ES256K: any;
     P256: any;
+    BLS_EIP2333: any;
     ED25519: any;
 }
 export interface KeystoreDbModel {
@@ -60,6 +65,7 @@ export declare class KeyStore implements KeyStoreModel {
     ED25519: any;
     ES256K: any;
     P256: any;
+    BLS_EIP2333: any;
     constructor();
 }
 export interface Account {
@@ -156,7 +162,6 @@ export declare class Wallet {
      */
     enrollAccount(options: ICreateOrLoadWalletProps): Promise<any>;
     close(): Promise<void>;
-    getUniversalWalletKey(alg: string): Promise<void>;
     /**
      * Creates an universal wallet for ES256K
      * @param options { passphrase, walletid, registry, rpcUrl }
@@ -164,7 +169,6 @@ export declare class Wallet {
     createES256K(options: ICreateOrLoadWalletProps): Promise<XDVUniversalProvider>;
     /**
      * Creates an universal wallet for Ed25519
-     * @param nodeurl EVM Node
      * @param options { passphrase, walletid }
      */
     createEd25519(options: ICreateOrLoadWalletProps): Promise<XDVUniversalProvider>;
@@ -173,6 +177,35 @@ export declare class Wallet {
      * @param options { passphrase, walletid, registry, rpcUrl }
      */
     createWeb3Provider(options: ICreateOrLoadWalletProps): Promise<XDVUniversalProvider>;
+    /**
+     * Signs message with a BLS private key given a wallet id
+     * @param options
+     * @param message
+     * @returns Promise
+     */
+    aggregateSign(options: ICreateOrLoadWalletProps, message: Uint8Array): Promise<Uint8Array>;
+    /**
+     * Gets BLS public key
+     * @param options
+     * @returns UInt8Array
+     */
+    getBlsPublicKey(options: ICreateOrLoadWalletProps): Promise<Uint8Array>;
+    /**
+     * Verifies aggregated signatures, one message signed by many
+     * @param signatures An array of signatures
+     * @param message A single message
+     * @param publicKeys An array of public keys
+     * @returns Promise
+     */
+    verifyAggregatedPubkeys(signatures: any[], message: any, publicKeys: any[]): Promise<boolean>;
+    /**
+     * Verifies aggregated signatures, many messages signed by many
+     * @param signatures An array of signatures
+     * @param message An array of messages
+     * @param publicKeys An array of public keys
+     * @returns Promise
+     */
+    verifyBatch(signatures: any[], messages: any[], publicKeys: any[]): Promise<boolean>;
     /**
      * Adds a set of ES256K and ED25519 Wallets
      * @param options
@@ -184,6 +217,7 @@ export declare class Wallet {
      * @param keystoreId
      */
     protected getPrivateKey(algorithm: AlgorithmTypeString, keystoreId: string): Promise<ec.KeyPair | eddsa.KeyPair>;
+    n: any;
     /**
      * Get private key exports
      * @param algorithm
@@ -235,6 +269,7 @@ export declare class Wallet {
      * Derives a wallet from a path
      */
     deriveFromPath(mnemonic: string, path: string): any;
+    getBlsEip2333(mnemonic: string): BlsEip2333;
     /**
      * Gets EdDSA key pair
      */
