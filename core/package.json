@@ -1,6 +1,6 @@
 {
    "name": "@xdvplatform/universal-wallet-core",
-   "version": "0.3.4",
+   "version": "0.3.5",
    "description": "The base business logic for the universal wallet",
    "main": "lib/index.js",
    "scripts": {
@@ -43,6 +43,7 @@
       "3id-did-provider": "^0.1.2",
       "arraybuffer-concat": "0.0.1",
       "arraybuffer-to-string": "^1.0.2",
+      "base64url": "^3.0.1",
       "bs58": "^4.0.1",
       "cids": "^0.8.3",
       "class-validator": "^0.12.2",

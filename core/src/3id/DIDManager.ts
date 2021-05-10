@@ -5,6 +5,7 @@ import { DID, DIDOptions } from 'dids'
 import { ec, eddsa } from 'elliptic'
 import EthrDID from 'ethr-did'
 import { DIDContext } from './DIDContext'
+import { RSAKeyGenerator, RSAProvider } from '../did/RSAKeyProvider'
 
 /**
  * Manages DIDs
@@ -29,6 +30,34 @@ export class DIDManager {
       rpcUrl,
     })
     return did
+  }
+  /**
+   * Create 3ID
+   * using XDV
+   * @param kp RSA keypair
+   */
+   async create3ID_RSA(kp?: any): Promise<DIDContext> {
+    let keypair = (await RSAKeyGenerator.createKeypair());
+    if (kp) {
+      keypair = kp;
+    }
+    const provider = new RSAProvider(keypair.public.bytes, keypair.bytes)
+    const did = new DID(({
+      provider,
+      resolver: KeyResolver.getResolver(),
+    } as unknown) as DIDOptions)
+    const issuer = () => ({
+      signer: (data: Uint8Array) => {
+        return keypair.sign(data)
+      },
+      alg: 'RSA',
+      did: did.id,
+    })
+
+    return {
+      did,
+      getIssuer: issuer
+    } as DIDContext;
   }
 
   /**

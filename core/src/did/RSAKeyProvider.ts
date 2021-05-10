@@ -16,7 +16,7 @@ import stringify from 'fast-json-stable-stringify'
 import { RPCError, createHandler } from 'rpc-utils'
 import type { HandlerMethods, RPCRequest, RPCResponse, SendRequestFunc } from 'rpc-utils'
 import * as u8a from 'uint8arrays'
-import { RSASmartcardSigner } from './SmartcardSigner'
+import { RSASigner, } from './SmartcardSigner'
 const B64 = 'base64pad'
 
 function toStableObject(obj: Record<string, any>): Record<string, any> {
@@ -53,7 +53,7 @@ const sign = async (
   protectedHeader: Record<string, any> = {}
 ) => {
   const kid = `${did}#${did.split(':')[2]}`
-  const signer = (a) => RSASmartcardSigner(u8a.toString(secretKey, B64))
+  const signer = RSASigner(u8a.toString(secretKey, B64)) as unknown as ((_) => Promise<string>)
   const header = toStableObject(Object.assign(protectedHeader, { kid, alg: 'RSA' }))
   return createJWS(toStableObject(payload), signer, header)
 }
