@@ -565,7 +565,7 @@ export class Wallet {
       const kp = new ec('secp256k1')
       return kp.keyFromPrivate(ks.keypairs.ES256K) as ec.KeyPair
     }
-  }n
+  }
 
   /**
    * Get private key exports
