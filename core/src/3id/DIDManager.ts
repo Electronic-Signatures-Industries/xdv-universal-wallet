@@ -36,12 +36,16 @@ export class DIDManager {
    * using XDV
    * @param kp RSA keypair
    */
-   async create3ID_RSA(kp?: any): Promise<DIDContext> {
-    let keypair = (await RSAKeyGenerator.createKeypair());
+  async create3ID_RSA(kp?: any): Promise<DIDContext> {
+    let keypair = RSAKeyGenerator.createKeypair()
     if (kp) {
-      keypair = kp;
+      keypair = kp
     }
-    const provider = new RSAProvider(keypair.public.bytes, keypair.bytes)
+    const provider = new RSAProvider(
+      new Uint8Array(keypair.publicDer),
+      new Uint8Array(keypair.privateDer),
+      keypair.pem
+    )
     const did = new DID(({
       provider,
       resolver: KeyResolver.getResolver(),
@@ -56,8 +60,8 @@ export class DIDManager {
 
     return {
       did,
-      getIssuer: issuer
-    } as DIDContext;
+      getIssuer: issuer,
+    } as DIDContext
   }
 
   /**
@@ -83,8 +87,8 @@ export class DIDManager {
 
     return {
       did,
-      getIssuer: issuer
-    } as DIDContext;
+      getIssuer: issuer,
+    } as DIDContext
   }
 
   /**
@@ -116,7 +120,7 @@ export class DIDManager {
 
     return {
       did,
-      issuer
+      issuer,
     } as DIDContext
   }
 
@@ -142,7 +146,7 @@ export class DIDManager {
 
     return {
       did,
-      issuer: null
+      issuer: null,
     } as DIDContext
   }
 }

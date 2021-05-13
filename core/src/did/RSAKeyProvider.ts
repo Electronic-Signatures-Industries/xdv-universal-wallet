@@ -1,7 +1,7 @@
 // https://github.com/ceramicnetwork/key-did-provider-ed25519/blob/master/src/index.ts
 // cidv1	ipld	0x01	permanent	CIDv1
-const CID = require('cids');
-import * as libp2pcrypto from 'libp2p-crypto'
+const CID = require('cids')
+const NodeRSA = require('node-rsa')
 import { createJWS, decryptJWE, x25519Decrypter } from 'did-jwt'
 import type {
   AuthParams,
@@ -14,9 +14,14 @@ import type {
 } from 'dids'
 import stringify from 'fast-json-stable-stringify'
 import { RPCError, createHandler } from 'rpc-utils'
-import type { HandlerMethods, RPCRequest, RPCResponse, SendRequestFunc } from 'rpc-utils'
+import type {
+  HandlerMethods,
+  RPCRequest,
+  RPCResponse,
+  SendRequestFunc,
+} from 'rpc-utils'
 import * as u8a from 'uint8arrays'
-import { RSASigner, } from './SmartcardSigner'
+import { RSASigner } from './SmartcardSigner'
 const B64 = 'base64pad'
 
 function toStableObject(obj: Record<string, any>): Record<string, any> {
@@ -43,18 +48,20 @@ function toGeneralJWS(jws: string): GeneralJWS {
 
 interface Context {
   did: string
-  secretKey: Uint8Array
+  secretKey: string
 }
 
 const sign = async (
   payload: Record<string, any>,
   did: string,
-  secretKey: Uint8Array,
-  protectedHeader: Record<string, any> = {}
+  secretKey: string,
+  protectedHeader: Record<string, any> = {},
 ) => {
   const kid = `${did}#${did.split(':')[2]}`
-  const signer = RSASigner(u8a.toString(secretKey, B64)) as unknown as ((_) => Promise<string>)
-  const header = toStableObject(Object.assign(protectedHeader, { kid, alg: 'RSA' }))
+  const signer = (RSASigner(secretKey) as unknown) as (_) => Promise<string>
+  const header = toStableObject(
+    Object.assign(protectedHeader, { kid, alg: 'RSA' }),
+  )
   return createJWS(toStableObject(payload), signer, header)
 }
 
@@ -69,11 +76,14 @@ const didMethods: HandlerMethods<Context, DIDProviderMethods> = {
         exp: Math.floor(Date.now() / 1000) + 600, // expires 10 min from now
       },
       did,
-      secretKey
+      secretKey,
     )
     return toGeneralJWS(response)
   },
-  did_createJWS: async ({ did, secretKey }, params: CreateJWSParams & { did: string }) => {
+  did_createJWS: async (
+    { did, secretKey },
+    params: CreateJWSParams & { did: string },
+  ) => {
     const requestDid = params.did.split('#')[0]
     if (requestDid !== did) throw new RPCError(4100, `Unknown DID: ${did}`)
     const jws = await sign(params.payload, did, secretKey, params.protected)
@@ -87,7 +97,7 @@ const didMethods: HandlerMethods<Context, DIDProviderMethods> = {
     // } catch (e) {
     //  throw new RPCError(-32000, (e as Error).message)
     //}
-    return null;
+    return null
   },
 }
 
@@ -95,8 +105,16 @@ const didMethods: HandlerMethods<Context, DIDProviderMethods> = {
  * RSA key generator
  */
 export class RSAKeyGenerator {
- static createKeypair() {
-    return libp2pcrypto.keys.generateKeyPair('RSA', 2048);  
+  static createKeypair() {
+    const key = new NodeRSA().generateKeyPair()
+    const publicDer = key.exportKey('pkcs8-public-der')
+    const privateDer = key.exportKey('pkcs1-der')
+    return {
+      privateDer,
+      publicDer,
+      sign: key.sign,
+      pem: key.exportKey(),
+    }
   }
 }
 
@@ -106,10 +124,10 @@ export class RSAKeyGenerator {
 export class RSAProvider implements DIDProvider {
   _handle: SendRequestFunc<DIDProviderMethods>
 
-  constructor(publicKey: Uint8Array, privateKey: Uint8Array) {
+  constructor(publicKey: Uint8Array, privateKey: Uint8Array, pem: string) {
     const did = encodeDID(publicKey)
     const handler = createHandler<Context, DIDProviderMethods>(didMethods)
-    this._handle = async (msg) => await handler({ did, secretKey: privateKey }, msg)
+    this._handle = async (msg) => await handler({ did, secretKey: pem }, msg)
   }
 
   get isDidProvider(): boolean {
@@ -117,7 +135,7 @@ export class RSAProvider implements DIDProvider {
   }
 
   async send<Name extends DIDMethodName>(
-    msg: RPCRequest<DIDProviderMethods, Name>
+    msg: RPCRequest<DIDProviderMethods, Name>,
   ): Promise<RPCResponse<DIDProviderMethods, Name> | null> {
     return await this._handle(msg)
   }

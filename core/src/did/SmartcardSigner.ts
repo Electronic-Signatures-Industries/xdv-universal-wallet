@@ -1,15 +1,14 @@
-// https://www.npmjs.com/package/js-crypto-key-utils
 const NodeRSA = require('node-rsa')
 import base64url from 'base64url'
-
+import * as cryptoUtils from 'js-crypto-key-utils'
 /**
  * Simple RSA Signer
  * @param key 
  * @returns 
  */
-export async function RSASigner(key: Uint8Array) {
+export async function RSASigner(pem: string) {
   const keyImport = new NodeRSA()
-  const rsa = keyImport.importKey(key, 'components')
+  const rsa = keyImport.importKey(pem)
   return async (data: Uint8Array) => base64url.encode(await rsa.sign(data))
 }
 
