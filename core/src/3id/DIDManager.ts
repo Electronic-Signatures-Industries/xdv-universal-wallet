@@ -1,6 +1,6 @@
 import { ThreeIdConnect, EthereumAuthProvider } from '3id-connect'
 import { Ed25519Provider } from 'key-did-provider-ed25519'
-import KeyResolver from '@ceramicnetwork/key-did-resolver'
+import KeyResolver from 'key-did-resolver'
 import { DID, DIDOptions } from 'dids'
 import { ec, eddsa } from 'elliptic'
 import EthrDID from 'ethr-did'
@@ -44,6 +44,7 @@ export class DIDManager {
     const provider = new RSAProvider(
       new Uint8Array(keypair.publicDer),
       new Uint8Array(keypair.privateDer),
+      keypair.publicPem,
       keypair.pem
     )
     const did = new DID(({

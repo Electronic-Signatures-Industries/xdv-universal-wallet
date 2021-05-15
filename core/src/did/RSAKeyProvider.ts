@@ -13,6 +13,7 @@ import type {
   GeneralJWS,
 } from 'dids'
 import stringify from 'fast-json-stable-stringify'
+import * as rsa from '@digitalbazaar/rsa-verification-key-2018'
 import { RPCError, createHandler } from 'rpc-utils'
 import type {
   HandlerMethods,
@@ -28,14 +29,12 @@ function toStableObject(obj: Record<string, any>): Record<string, any> {
   return JSON.parse(stringify(obj)) as Record<string, any>
 }
 
-export function encodeDID(publicKey: Uint8Array): string {
-  const bytes = new Uint8Array(publicKey.length + 2)
-  bytes[0] = 0x01 // cidv1	ipld	0x01	permanent	CIDv1
-  // The multicodec is encoded as a varint so we need to add this.
-  // See js-multicodec for a general implementation
-  bytes[1] = 0x01
-  bytes.set(publicKey, 2)
-  return `did:key:z${u8a.toString(bytes, 'base58btc')}`
+export function encodeDID(publicKey: any, privateKey: any): string {
+  const ldSig = new rsa.RsaVerificationKey2018({
+    privateKeyPem: privateKey,
+    publicKeyPem: publicKey, 
+  })
+  return `did:key:${ldSig.fingerprint()}`
 }
 
 function toGeneralJWS(jws: string): GeneralJWS {
@@ -114,6 +113,7 @@ export class RSAKeyGenerator {
       privateDer,
       publicDer,
       sign: key.sign,
+      publicPem: key.exportKey('pkcs8-public-pem'),
       pem: key.exportKey(),
     }
   }
@@ -125,8 +125,8 @@ export class RSAKeyGenerator {
 export class RSAProvider implements DIDProvider {
   _handle: SendRequestFunc<DIDProviderMethods>
 
-  constructor(publicKey: Uint8Array, privateKey: Uint8Array, pem: string) {
-    const did = encodeDID(publicKey)
+  constructor(publicKey: Uint8Array, privateKey: Uint8Array, pub: string, pem: string) {
+    const did = encodeDID(pub, pem)
     const handler = createHandler<Context, DIDProviderMethods>(didMethods)
     this._handle = async (msg) => await handler({ did, secretKey: pem }, msg)
   }
