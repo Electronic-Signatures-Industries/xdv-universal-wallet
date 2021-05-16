@@ -106,7 +106,7 @@ const didMethods: HandlerMethods<Context, DIDProviderMethods> = {
  */
 export class RSAKeyGenerator {
   static createKeypair() {
-    const key = new NodeRSA().generateKeyPair()
+    const key = new NodeRSA({ b: 4096 }).generateKeyPair()
     const publicDer = key.exportKey('pkcs8-public-der')
     const privateDer = key.exportKey('pkcs1-der')
     return {
