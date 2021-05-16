@@ -1,3 +1,5 @@
+import * as u8a from 'uint8arrays'
+import multiformats from 'multiformats/cjs/src/basics'
 import { ThreeIdConnect, EthereumAuthProvider } from '3id-connect'
 import { Ed25519Provider } from 'key-did-provider-ed25519'
 import KeyResolver from 'key-did-resolver'
@@ -6,7 +8,12 @@ import { ec, eddsa } from 'elliptic'
 import EthrDID from 'ethr-did'
 import { DIDContext } from './DIDContext'
 import { RSAKeyGenerator, RSAProvider } from '../did/RSAKeyProvider'
+const DID_LD_JSON = 'application/did+ld+json'
+const DID_JSON = 'application/did+json'
 
+const varint = require('varint')
+const multibase = require('multibase')
+const multicodec = require('multicodec')
 /**
  * Manages DIDs
  */
@@ -45,11 +52,11 @@ export class DIDManager {
       new Uint8Array(keypair.publicDer),
       new Uint8Array(keypair.privateDer),
       keypair.publicPem,
-      keypair.pem
+      keypair.pem,
     )
     const did = new DID(({
       provider,
-      resolver: KeyResolver.getResolver(),
+      resolver: this.rsaGetResolver(),
     } as unknown) as DIDOptions)
     const issuer = () => ({
       signer: (data: Uint8Array) => {
@@ -63,6 +70,65 @@ export class DIDManager {
       did,
       getIssuer: issuer,
     } as DIDContext
+  }
+
+  // @molekilla, 2021
+  // ==========================================================
+  // Forked off ceramic network key-did-resolver npm package
+  // ==========================================================
+
+  rsaGetResolver() {
+    function keyToDidDoc(pubKeyBytes, fingerprint) {
+      const did = `did:key:${fingerprint}`
+      const keyId = `${did}#${fingerprint}`
+      return {
+        id: did,
+        verificationMethod: [
+          {
+            id: keyId,
+            type: 'RSAVerificationKey2018',
+            controller: did,
+            publicKeyBase58: u8a.toString(pubKeyBytes, 'base58btc'),
+          },
+        ],
+        authentication: [keyId],
+        assertionMethod: [keyId],
+        capabilityDelegation: [keyId],
+        capabilityInvocation: [keyId],
+      }
+    }
+
+    async function resolve(did, parsed, resolver, options) {
+      const contentType = options.accept || DID_JSON
+      const response: any = {
+        didResolutionMetadata: { contentType },
+        didDocument: null,
+        didDocumentMetadata: {},
+      }
+      try {
+        const multicodecPubKey = multibase.decode(parsed.id)
+        const pubKeyBytes = multicodecPubKey.slice(varint.decode.bytes)
+        const doc = keyToDidDoc(pubKeyBytes, parsed.id)
+        console.log(doc, pubKeyBytes)
+        if (contentType === DID_LD_JSON) {
+          doc['@context'] = 'https://w3id.org/did/v1'
+          response.didDocument = doc
+        } else if (contentType === DID_JSON) {
+          response.didDocument = doc
+        } else {
+          delete response.didResolutionMetadata.contentType
+          response.didResolutionMetadata.error = 'representationNotSupported'
+        }
+      } catch (e) {
+        console.log(e)
+        response.didResolutionMetadata.error = 'invalidDid'
+        response.didResolutionMetadata.message = e.toString()
+      }
+      return response
+    }
+    return {
+      key: resolve,
+    }
   }
 
   /**
