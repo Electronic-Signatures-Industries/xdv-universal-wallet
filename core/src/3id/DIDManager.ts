@@ -1,5 +1,4 @@
 import * as u8a from 'uint8arrays'
-import multiformats from 'multiformats/cjs/src/basics'
 import { ThreeIdConnect, EthereumAuthProvider } from '3id-connect'
 import { Ed25519Provider } from 'key-did-provider-ed25519'
 import KeyResolver from 'key-did-resolver'
@@ -13,7 +12,6 @@ const DID_JSON = 'application/did+json'
 
 const varint = require('varint')
 const multibase = require('multibase')
-const multicodec = require('multicodec')
 /**
  * Manages DIDs
  */
@@ -56,7 +54,7 @@ export class DIDManager {
     )
     const did = new DID(({
       provider,
-      resolver: this.rsaGetResolver(),
+      resolver: this.rsaGetResolver(keypair.publicPem),
     } as unknown) as DIDOptions)
     const issuer = () => ({
       signer: (data: Uint8Array) => {
@@ -77,8 +75,8 @@ export class DIDManager {
   // Forked off ceramic network key-did-resolver npm package
   // ==========================================================
 
-  rsaGetResolver() {
-    function keyToDidDoc(pubKeyBytes, fingerprint) {
+  rsaGetResolver(publicKeyPem) {
+    function keyToDidDoc(publicKeyPem, pubKeyBytes, fingerprint) {
       const did = `did:key:${fingerprint}`
       const keyId = `${did}#${fingerprint}`
       return {
@@ -89,6 +87,7 @@ export class DIDManager {
             type: 'RSAVerificationKey2018',
             controller: did,
             publicKeyBase58: u8a.toString(pubKeyBytes, 'base58btc'),
+            publicKeyPem,
           },
         ],
         authentication: [keyId],
@@ -108,8 +107,7 @@ export class DIDManager {
       try {
         const multicodecPubKey = multibase.decode(parsed.id)
         const pubKeyBytes = multicodecPubKey.slice(varint.decode.bytes)
-        const doc = keyToDidDoc(pubKeyBytes, parsed.id)
-        console.log(doc, pubKeyBytes)
+        const doc = keyToDidDoc(publicKeyPem, pubKeyBytes, parsed.id)
         if (contentType === DID_LD_JSON) {
           doc['@context'] = 'https://w3id.org/did/v1'
           response.didDocument = doc
@@ -120,7 +118,6 @@ export class DIDManager {
           response.didResolutionMetadata.error = 'representationNotSupported'
         }
       } catch (e) {
-        console.log(e)
         response.didResolutionMetadata.error = 'invalidDid'
         response.didResolutionMetadata.message = e.toString()
       }

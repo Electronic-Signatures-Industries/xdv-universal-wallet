@@ -7,9 +7,8 @@ import * as cryptoUtils from 'js-crypto-key-utils'
  * @returns 
  */
 export function RSASigner(pem: string) {
-  const keyImport = new NodeRSA()
-  const rsa = keyImport.importKey(pem)
-  return async (data: Uint8Array) => base64url.encode(await rsa.sign(data))
+  const keyImport = new NodeRSA(pem)
+  return async (data: Uint8Array) => base64url.encode(await keyImport.sign(data))
 }
 
 

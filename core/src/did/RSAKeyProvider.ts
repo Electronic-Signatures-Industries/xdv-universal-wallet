@@ -61,10 +61,11 @@ const sign = async (
   const header = toStableObject(
     Object.assign(protectedHeader, { kid, alg: 'RSA' }),
   )
-
-  return createJWS(toStableObject(payload), signer, header)
+  const jws = createJWS(toStableObject(payload), signer, header)
+  return jws;
 }
 
+///@ts-ignore
 const didMethods: HandlerMethods<Context, DIDProviderMethods> = {
   did_authenticate: async ({ did, secretKey }, params: AuthParams) => {
     const response = await sign(
@@ -123,11 +124,12 @@ export class RSAKeyGenerator {
  * RSA DID Key Provider
  */
 export class RSAProvider implements DIDProvider {
-  _handle: SendRequestFunc<DIDProviderMethods>
+  ///@ts-ignore
+  _handle: any
 
   constructor(publicKey: Uint8Array, privateKey: Uint8Array, pub: string, pem: string) {
     const did = encodeDID(pub, pem)
-    const handler = createHandler<Context, DIDProviderMethods>(didMethods)
+    const handler = createHandler(didMethods)
     this._handle = async (msg) => await handler({ did, secretKey: pem }, msg)
   }
 
@@ -135,9 +137,9 @@ export class RSAProvider implements DIDProvider {
     return true
   }
 
-  async send<Name extends DIDMethodName>(
-    msg: RPCRequest<DIDProviderMethods, Name>,
-  ): Promise<RPCResponse<DIDProviderMethods, Name> | null> {
+  async send(
+    msg:any,
+  )  {
     return await this._handle(msg)
   }
 }
