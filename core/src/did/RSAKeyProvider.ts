@@ -59,7 +59,7 @@ const sign = async (
   const kid = `${did}#${did.split(':')[2]}`
   const signer = RSASigner(secretKey) as  any
   const header = toStableObject(
-    Object.assign(protectedHeader, { kid, alg: 'RSA' }),
+    Object.assign(protectedHeader, { kid, alg: 'RS256' }),
   )
   const jws = createJWS(toStableObject(payload), signer, header)
   return jws;
