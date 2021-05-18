@@ -56,6 +56,7 @@ export class DIDManager {
       provider,
       resolver: this.rsaGetResolver(keypair.publicPem),
     } as unknown) as DIDOptions)
+    //TODO: Deprecate
     const issuer = () => ({
       signer: (data: Uint8Array) => {
         return keypair.sign(data)
