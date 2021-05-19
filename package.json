@@ -30,6 +30,8 @@
     "frontend"
   ],
   "dependencies": {
-    "bls12-381-keygen": "^0.1.2"
+    "bls12-381-keygen": "^0.1.2",
+    "did-jwt": "^5.4.1",
+    "did-jwt-rsa": "^0.1.0"
   }
 }

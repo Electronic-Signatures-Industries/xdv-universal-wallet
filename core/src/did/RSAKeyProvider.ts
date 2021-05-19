@@ -2,7 +2,7 @@
 // cidv1	ipld	0x01	permanent	CIDv1
 const CID = require('cids')
 const NodeRSA = require('node-rsa')
-import { createJWS, decryptJWE, x25519Decrypter } from 'ifesa-did-jwt'
+import { createJWS } from 'did-jwt-rsa'
 import type {
   AuthParams,
   CreateJWSParams,
