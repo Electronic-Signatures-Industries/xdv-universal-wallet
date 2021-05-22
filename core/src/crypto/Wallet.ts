@@ -14,7 +14,8 @@ import { from, Subject, throwError } from 'rxjs'
 import { arrayify, hexlify, mnemonicToSeed } from 'ethers/lib/utils'
 import Web3 from 'web3'
 import { DIDManager } from '../3id/DIDManager'
-import { DID } from 'dids'
+import { DID } from 'did-jwt-rsa/lib/dids';
+
 import { toEthereumAddress } from 'did-jwt'
 import EthCrypto from 'eth-crypto'
 import { stringToBytes } from 'did-jwt/lib/util'

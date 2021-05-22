@@ -1,6 +1,7 @@
 /// <reference types="node" />
 /// <reference types="pouchdb-core" />
-import { DID } from 'dids';
+import { DID } from 'did-jwt-rsa/lib/dids';
+
 import { ethers } from 'ethers';
 export declare class IPLDManager {
     client: any;

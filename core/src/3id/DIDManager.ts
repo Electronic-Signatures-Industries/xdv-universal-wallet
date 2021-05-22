@@ -2,11 +2,12 @@ import * as u8a from 'uint8arrays'
 import { ThreeIdConnect, EthereumAuthProvider } from '3id-connect'
 import { Ed25519Provider } from 'key-did-provider-ed25519'
 import KeyResolver from 'key-did-resolver'
-import { DID, DIDOptions } from 'dids'
+
 import { ec, eddsa } from 'elliptic'
 import EthrDID from 'ethr-did'
 import { DIDContext } from './DIDContext'
 import { RSAKeyGenerator, RSAProvider } from '../did/RSAKeyProvider'
+import { DID, DIDOptions } from 'did-jwt-rsa/lib/dids'
 const DID_LD_JSON = 'application/did+ld+json'
 const DID_JSON = 'application/did+json'
 

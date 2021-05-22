@@ -11,7 +11,7 @@ import type {
   DIDProviderMethods,
   DIDProvider,
   GeneralJWS,
-} from 'dids'
+} from 'did-jwt-rsa/src/dids'
 import stringify from 'fast-json-stable-stringify'
 import * as rsa from '@digitalbazaar/rsa-verification-key-2018'
 import { RPCError, createHandler } from 'rpc-utils'
@@ -107,7 +107,7 @@ const didMethods: HandlerMethods<Context, DIDProviderMethods> = {
  */
 export class RSAKeyGenerator {
   static createKeypair() {
-    const key = new NodeRSA({ b: 4096 }).generateKeyPair()
+    const key = new NodeRSA({ b: 2048 }).generateKeyPair()
     const publicDer = key.exportKey('pkcs8-public-der')
     const privateDer = key.exportKey('pkcs1-der')
     return {

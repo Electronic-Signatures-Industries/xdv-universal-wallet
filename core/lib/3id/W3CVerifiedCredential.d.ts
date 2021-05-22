@@ -1,4 +1,5 @@
-import { DID } from 'dids';
+import { DID } from 'did-jwt-rsa/src/dids';
+
 export declare class W3CVerifiedCredential {
     constructor();
     /**

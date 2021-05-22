@@ -1,5 +1,5 @@
+import { DID, DIDProvider } from 'did-jwt-rsa/src/dids';
 
-import { DID, DIDProvider } from 'dids'
 import { ec } from 'elliptic'
 import EthrDID from 'ethr-did'
 import { Ed25519Provider } from 'key-did-provider-ed25519'
