@@ -14,8 +14,8 @@ import { from, Subject, throwError } from 'rxjs'
 import { arrayify, hexlify, mnemonicToSeed } from 'ethers/lib/utils'
 import Web3 from 'web3'
 import { DIDManager } from '../3id/DIDManager'
-import { DID } from 'dids'
-import * as ed from 'noble-ed25519'
+import { DID } from 'did-jwt-rsa/lib/dids';
+
 import { toEthereumAddress } from 'did-jwt'
 import EthCrypto from 'eth-crypto'
 import { stringToBytes } from 'did-jwt/lib/util'
@@ -25,7 +25,6 @@ import { RxDatabase, RxDocument, RxQuery, RxDocumentBase } from 'rxdb'
 import { RxDBDevModePlugin } from 'rxdb/plugins/dev-mode'
 import { createRxDatabase, addRxPlugin } from 'rxdb/plugins/core'
 import moment from 'moment'
-import { EthereumAuthProvider } from '3id-connect'
 
 import * as PouchdbAdapterIdb from 'pouchdb-adapter-idb'
 import * as PouchdbAdapterMemory from 'pouchdb-adapter-memory'

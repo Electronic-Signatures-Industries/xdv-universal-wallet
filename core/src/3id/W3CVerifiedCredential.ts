@@ -1,5 +1,5 @@
 import { JwtCredentialPayload, createVerifiableCredentialJwt, createVerifiablePresentationJwt, JwtPresentationPayload } from 'did-jwt-vc'
-import { DID } from 'dids'
+import { DID } from 'did-jwt-rsa/lib/dids'
 import moment from 'moment'
 
 export class W3CVerifiedCredential {

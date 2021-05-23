@@ -5,7 +5,8 @@ import { ec, eddsa } from 'elliptic';
 import { ethers } from 'ethers';
 import { Subject } from 'rxjs';
 import Web3 from 'web3';
-import { DID } from 'dids';
+import { DID } from 'did-jwt-rsa/src/dids';
+
 import { RxDatabase, RxDocument } from 'rxdb';
 export declare type AlgorithmTypeString = keyof typeof AlgorithmType;
 export declare enum AlgorithmType {

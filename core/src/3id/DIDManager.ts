@@ -1,11 +1,18 @@
+import * as u8a from 'uint8arrays'
 import { ThreeIdConnect, EthereumAuthProvider } from '3id-connect'
 import { Ed25519Provider } from 'key-did-provider-ed25519'
-import KeyResolver from '@ceramicnetwork/key-did-resolver'
-import { DID, DIDOptions } from 'dids'
+import KeyResolver from 'key-did-resolver'
+
 import { ec, eddsa } from 'elliptic'
 import EthrDID from 'ethr-did'
 import { DIDContext } from './DIDContext'
+import { RSAKeyGenerator, RSAProvider } from '../did/RSAKeyProvider'
+import { DID, DIDOptions } from 'did-jwt-rsa/lib/dids'
+const DID_LD_JSON = 'application/did+ld+json'
+const DID_JSON = 'application/did+json'
 
+const varint = require('varint')
+const multibase = require('multibase')
 /**
  * Manages DIDs
  */
@@ -29,6 +36,97 @@ export class DIDManager {
       rpcUrl,
     })
     return did
+  }
+  /**
+   * Create 3ID
+   * using XDV
+   * @param kp RSA keypair
+   */
+  async create3ID_RSA(kp?: any): Promise<DIDContext> {
+    let keypair = RSAKeyGenerator.createKeypair()
+    if (kp) {
+      keypair = kp
+    }
+    const provider = new RSAProvider(
+      new Uint8Array(keypair.publicDer),
+      new Uint8Array(keypair.privateDer),
+      keypair.publicPem,
+      keypair.pem,
+    )
+    const did = new DID(({
+      provider,
+      resolver: this.rsaGetResolver(keypair.publicPem),
+    } as unknown) as DIDOptions)
+    const issuer = () => ({
+      signer: (data: Uint8Array) => {
+        return keypair.sign(data)
+      },
+      alg: 'RSA',
+      did: did.id,
+    })
+
+    return {
+      did,
+      getIssuer: issuer,
+    } as DIDContext
+  }
+
+  // @molekilla, 2021
+  // ==========================================================
+  // Forked off ceramic network key-did-resolver npm package
+  // ==========================================================
+
+  rsaGetResolver(publicKeyPem) {
+    function keyToDidDoc(publicKeyPem, pubKeyBytes, fingerprint) {
+      const did = `did:key:${fingerprint}`
+      const keyId = `${did}#${fingerprint}`
+      return {
+        id: did,
+        verificationMethod: [
+          {
+            id: keyId,
+            type: 'RSAVerificationKey2018',
+            controller: did,
+            publicKeyBase58: u8a.toString(pubKeyBytes, 'base58btc'),
+            publicKeyPem,
+          },
+        ],
+        authentication: [keyId],
+        assertionMethod: [keyId],
+        capabilityDelegation: [keyId],
+        capabilityInvocation: [keyId],
+      }
+    }
+
+    async function resolve(did, parsed, resolver, options) {
+      const contentType = options.accept || DID_JSON
+      const response: any = {
+        didResolutionMetadata: { contentType },
+        didDocument: null,
+        didDocumentMetadata: {},
+      }
+      try {
+        const multicodecPubKey = multibase.decode(parsed.id)
+        const pubKeyBytes = multicodecPubKey.slice(varint.decode.bytes)
+        const doc = keyToDidDoc(publicKeyPem, pubKeyBytes, parsed.id)
+        if (contentType === DID_LD_JSON) {
+          doc['@context'] = 'https://w3id.org/did/v1'
+          response.didDocument = doc
+        } else if (contentType === DID_JSON) {
+          response.didDocument = doc
+        } else {
+          delete response.didResolutionMetadata.contentType
+          response.didResolutionMetadata.error = 'representationNotSupported'
+        }
+      } catch (e) {
+        response.didResolutionMetadata.error = 'invalidDid'
+        response.didResolutionMetadata.message = e.toString()
+      }
+      return response
+    }
+    return {
+      key: resolve,
+    }
   }
 
   /**
@@ -54,8 +152,8 @@ export class DIDManager {
 
     return {
       did,
-      getIssuer: issuer
-    } as DIDContext;
+      getIssuer: issuer,
+    } as DIDContext
   }
 
   /**
@@ -87,7 +185,7 @@ export class DIDManager {
 
     return {
       did,
-      issuer
+      issuer,
     } as DIDContext
   }
 
@@ -113,7 +211,7 @@ export class DIDManager {
 
     return {
       did,
-      issuer: null
+      issuer: null,
     } as DIDContext
   }
 }

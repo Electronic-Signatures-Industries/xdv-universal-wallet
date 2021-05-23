@@ -1,4 +1,3 @@
-import dagJose from 'dag-jose'
 import multiformats from 'multiformats/cjs/src/basics'
 import legacy from 'multiformats/cjs/src/legacy'
 import { DID } from 'dids'
