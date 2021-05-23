@@ -4,9 +4,16 @@ XDV Universal Wallet
 
 ## Install
 
-`npm i @xdvplatform/universal-wallet-core`
+`npm i xdv-universal-wallet-core`
 
-Creates a 3ID protocol enabled Ed25519 or Web3 provider
+## Features
+
+* RxDB storage with encryption enabled
+* DID and IPLD ready
+* Supports ES256K, Ed25519 and RS256
+* Aggregation signatures - BLS
+
+
 
 ## Quickstart
 
@@ -20,7 +27,7 @@ Creates a 3ID protocol enabled Ed25519 or Web3 provider
 ## Example
 
 ```typescript
-    import { Wallet } from "@xdvplatform/universal-wallet-core";
+    import { Wallet } from "xdv-universal-wallet-core";
 
     const did = await Wallet.create3IDEd25519({
       passphrase: 'abcdef123456',
