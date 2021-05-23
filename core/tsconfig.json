@@ -37,6 +37,7 @@
     "node_modules",
     "./node_modules",
     "./node_modules/*",
+    "./node_modules/did-jwt-rsa/src/types.ts",
     "./node_modules/@types/node/index.d.ts",
   ]
 }

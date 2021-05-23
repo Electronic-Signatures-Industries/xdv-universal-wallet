@@ -1,6 +1,6 @@
 import multiformats from 'multiformats/cjs/src/basics'
 import legacy from 'multiformats/cjs/src/legacy'
-import { DID } from 'dids'
+import { DID } from 'did-jwt-rsa/lib/dids'
 import { ethers } from 'ethers'
 import moment from 'moment'
 import IPFSClient from 'ipfs-http-client';

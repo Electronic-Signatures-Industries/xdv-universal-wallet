@@ -15,6 +15,15 @@ export declare class DIDManager {
     /**
      * Create 3ID
      * using XDV
+     * @param kp RSA keypair
+     */
+    create3ID_RSA(kp?: any): Promise<DIDContext>;
+    rsaGetResolver(publicKeyPem: any): {
+        key: (did: any, parsed: any, resolver: any, options: any) => Promise<any>;
+    };
+    /**
+     * Create 3ID
+     * using XDV
      * @param edDSAKeyPair EdDSA keypair
      */
     create3ID_Ed25519(edDSAKeyPair: eddsa.KeyPair): Promise<DIDContext>;

@@ -5,8 +5,7 @@ import { ec, eddsa } from 'elliptic';
 import { ethers } from 'ethers';
 import { Subject } from 'rxjs';
 import Web3 from 'web3';
-import { DID } from 'did-jwt-rsa/src/dids';
-
+import { DID } from 'did-jwt-rsa/lib/dids';
 import { RxDatabase, RxDocument } from 'rxdb';
 export declare type AlgorithmTypeString = keyof typeof AlgorithmType;
 export declare enum AlgorithmType {
@@ -218,7 +217,6 @@ export declare class Wallet {
      * @param keystoreId
      */
     protected getPrivateKey(algorithm: AlgorithmTypeString, keystoreId: string): Promise<ec.KeyPair | eddsa.KeyPair>;
-    n: any;
     /**
      * Get private key exports
      * @param algorithm

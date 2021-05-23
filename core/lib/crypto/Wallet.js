@@ -18,8 +18,6 @@ const utils_1 = require("ethers/lib/utils");
 const DIDManager_1 = require("../3id/DIDManager");
 const did_jwt_1 = require("did-jwt");
 const eth_crypto_1 = tslib_1.__importDefault(require("eth-crypto"));
-// import modules
-const dev_mode_1 = require("rxdb/plugins/dev-mode");
 const core_1 = require("rxdb/plugins/core");
 const moment_1 = tslib_1.__importDefault(require("moment"));
 const PouchdbAdapterIdb = tslib_1.__importStar(require("pouchdb-adapter-idb"));
@@ -28,7 +26,6 @@ const encryption_1 = require("rxdb/plugins/encryption");
 const validate_1 = require("rxdb/plugins/validate");
 const update_1 = require("rxdb/plugins/update");
 const web3factory_1 = require("../utils/web3factory");
-core_1.addRxPlugin(dev_mode_1.RxDBDevModePlugin);
 var AlgorithmType;
 (function (AlgorithmType) {
     AlgorithmType[AlgorithmType["RSA"] = 0] = "RSA";

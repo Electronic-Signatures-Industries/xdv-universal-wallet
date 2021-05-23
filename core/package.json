@@ -1,5 +1,5 @@
 {
-   "name": "@xdvplatform/universal-wallet-core",
+   "name": "xdv-universal-wallet-core",
    "version": "0.3.5",
    "description": "The base business logic for the universal wallet",
    "main": "lib/index.js",
@@ -37,6 +37,7 @@
       "@digitalbazaar/rsa-verification-key-2018": "git+https://github.com/digitalbazaar/rsa-verification-key-2018.git#initial",
       "3id-connect": "^0.1.0",
       "base64url": "^3.0.1",
+      "bls12-381-keygen": "^0.1.2",
       "bs58": "^4.0.1",
       "cids": "^1.1.6",
       "class-validator": "^0.12.2",

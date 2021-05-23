@@ -2,11 +2,17 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DIDManager = void 0;
 const tslib_1 = require("tslib");
+const u8a = tslib_1.__importStar(require("uint8arrays"));
 const _3id_connect_1 = require("3id-connect");
 const key_did_provider_ed25519_1 = require("key-did-provider-ed25519");
-const key_did_resolver_1 = tslib_1.__importDefault(require("@ceramicnetwork/key-did-resolver"));
-const dids_1 = require("dids");
+const key_did_resolver_1 = tslib_1.__importDefault(require("key-did-resolver"));
 const ethr_did_1 = tslib_1.__importDefault(require("ethr-did"));
+const RSAKeyProvider_1 = require("../did/RSAKeyProvider");
+const dids_1 = require("did-jwt-rsa/lib/dids");
+const DID_LD_JSON = 'application/did+ld+json';
+const DID_JSON = 'application/did+json';
+const varint = require('varint');
+const multibase = require('multibase');
 /**
  * Manages DIDs
  */
@@ -29,6 +35,91 @@ class DIDManager {
     /**
      * Create 3ID
      * using XDV
+     * @param kp RSA keypair
+     */
+    async create3ID_RSA(kp) {
+        let keypair = RSAKeyProvider_1.RSAKeyGenerator.createKeypair();
+        if (kp) {
+            keypair = kp;
+        }
+        const provider = new RSAKeyProvider_1.RSAProvider(new Uint8Array(keypair.publicDer), new Uint8Array(keypair.privateDer), keypair.publicPem, keypair.pem);
+        const did = new dids_1.DID({
+            provider,
+            resolver: this.rsaGetResolver(keypair.publicPem),
+        });
+        const issuer = () => ({
+            signer: (data) => {
+                return keypair.sign(data);
+            },
+            alg: 'RSA',
+            did: did.id,
+        });
+        return {
+            did,
+            getIssuer: issuer,
+        };
+    }
+    // @molekilla, 2021
+    // ==========================================================
+    // Forked off ceramic network key-did-resolver npm package
+    // ==========================================================
+    rsaGetResolver(publicKeyPem) {
+        function keyToDidDoc(publicKeyPem, pubKeyBytes, fingerprint) {
+            const did = `did:key:${fingerprint}`;
+            const keyId = `${did}#${fingerprint}`;
+            return {
+                id: did,
+                verificationMethod: [
+                    {
+                        id: keyId,
+                        type: 'RSAVerificationKey2018',
+                        controller: did,
+                        publicKeyBase58: u8a.toString(pubKeyBytes, 'base58btc'),
+                        publicKeyPem,
+                    },
+                ],
+                authentication: [keyId],
+                assertionMethod: [keyId],
+                capabilityDelegation: [keyId],
+                capabilityInvocation: [keyId],
+            };
+        }
+        async function resolve(did, parsed, resolver, options) {
+            const contentType = options.accept || DID_JSON;
+            const response = {
+                didResolutionMetadata: { contentType },
+                didDocument: null,
+                didDocumentMetadata: {},
+            };
+            try {
+                const multicodecPubKey = multibase.decode(parsed.id);
+                const pubKeyBytes = multicodecPubKey.slice(varint.decode.bytes);
+                const doc = keyToDidDoc(publicKeyPem, pubKeyBytes, parsed.id);
+                if (contentType === DID_LD_JSON) {
+                    doc['@context'] = 'https://w3id.org/did/v1';
+                    response.didDocument = doc;
+                }
+                else if (contentType === DID_JSON) {
+                    response.didDocument = doc;
+                }
+                else {
+                    delete response.didResolutionMetadata.contentType;
+                    response.didResolutionMetadata.error = 'representationNotSupported';
+                }
+            }
+            catch (e) {
+                response.didResolutionMetadata.error = 'invalidDid';
+                response.didResolutionMetadata.message = e.toString();
+            }
+            return response;
+        }
+        return {
+            key: resolve,
+        };
+    }
+    /**
+     * Create 3ID
+     * using XDV
      * @param edDSAKeyPair EdDSA keypair
      */
     async create3ID_Ed25519(edDSAKeyPair) {
@@ -47,7 +138,7 @@ class DIDManager {
         });
         return {
             did,
-            getIssuer: issuer
+            getIssuer: issuer,
         };
     }
     /**
@@ -73,7 +164,7 @@ class DIDManager {
         });
         return {
             did,
-            issuer
+            issuer,
         };
     }
     /**
@@ -93,7 +184,7 @@ class DIDManager {
         });
         return {
             did,
-            issuer: null
+            issuer: null,
         };
     }
 }
