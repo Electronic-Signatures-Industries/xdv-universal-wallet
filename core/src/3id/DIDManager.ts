@@ -8,6 +8,7 @@ import EthrDID from 'ethr-did'
 import { DIDContext } from './DIDContext'
 import { RSAKeyGenerator, RSAProvider } from '../did/RSAKeyProvider'
 import { DID, DIDOptions } from 'did-jwt-rsa/lib/dids'
+import { SmartCardConnectorPKCS11 } from '../did/SmartcardConnector'
 const DID_LD_JSON = 'application/did+ld+json'
 const DID_JSON = 'application/did+json'
 
@@ -47,12 +48,7 @@ export class DIDManager {
     if (kp) {
       keypair = kp
     }
-    const provider = new RSAProvider(
-      new Uint8Array(keypair.publicDer),
-      new Uint8Array(keypair.privateDer),
-      keypair.publicPem,
-      keypair.pem,
-    )
+    const provider = new RSAProvider(keypair.publicPem, keypair.pem)
     const did = new DID(({
       provider,
       resolver: this.rsaGetResolver(keypair.publicPem),
@@ -68,6 +64,37 @@ export class DIDManager {
     return {
       did,
       getIssuer: issuer,
+    } as DIDContext
+  }
+  
+  base64toPem(base64)
+  {
+      for(var result="", lines=0;result.length-lines < base64.length;lines++) {
+          result+=base64.substr(result.length-lines,64)+"\n"
+      }
+  
+      return "-----BEGIN PUBLIC KEY-----\n" + result + "-----END PUBLIC KEY-----";
+  }
+
+  /**
+   * Create 3ID
+   * using XDV
+   * @param kp RSA keypair
+   */
+  async create3ID_PKCS11(pin: string): Promise<DIDContext> {
+    const sc = new SmartCardConnectorPKCS11()
+    await sc.connect()
+    const certs = await sc.getCerts('0', pin)
+    const publicPem = this.base64toPem(certs.publicKey)
+    const provider = new RSAProvider(publicPem, null, pin)
+    const did = new DID(({
+      provider,
+      // @ts-ignore
+      resolver: this.rsaGetResolver(publicPem),
+    } as unknown) as DIDOptions)
+
+    return {
+      did,
     } as DIDContext
   }
 
@@ -89,6 +116,7 @@ export class DIDManager {
             controller: did,
             publicKeyBase58: u8a.toString(pubKeyBytes, 'base58btc'),
             publicKeyPem,
+            publicKeyHex: u8a.toString(pubKeyBytes,'base64')
           },
         ],
         authentication: [keyId],
