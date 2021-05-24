@@ -30,30 +30,30 @@ function toGeneralJWS(jws) {
         signatures: [{ protected: protectedHeader, signature }],
     };
 }
-const sign = async (payload, did, secretKey, protectedHeader = {}) => {
+const sign = async (payload, did, secretKey, isPIN, protectedHeader = {}) => {
     const kid = `${did}#${did.split(':')[2]}`;
-    const signer = SmartcardSigner_1.RSASigner(secretKey);
+    const signer = await SmartcardSigner_1.RSASigner(secretKey, isPIN);
     const header = toStableObject(Object.assign(protectedHeader, { kid, alg: 'RS256' }));
     const jws = did_jwt_rsa_1.createJWS(toStableObject(payload), signer, header);
     return jws;
 };
 ///@ts-ignore
 const didMethods = {
-    did_authenticate: async ({ did, secretKey }, params) => {
+    did_authenticate: async ({ did, secretKey, isPIN }, params) => {
         const response = await sign({
             did,
             aud: params.aud,
             nonce: params.nonce,
             paths: params.paths,
             exp: Math.floor(Date.now() / 1000) + 600, // expires 10 min from now
-        }, did, secretKey);
+        }, did, secretKey, isPIN);
         return toGeneralJWS(response);
     },
-    did_createJWS: async ({ did, secretKey }, params) => {
+    did_createJWS: async ({ did, secretKey, isPIN }, params) => {
         const requestDid = params.did.split('#')[0];
         if (requestDid !== did)
             throw new rpc_utils_1.RPCError(4100, `Unknown DID: ${did}`);
-        const jws = await sign(params.payload, did, secretKey, params.protected);
+        const jws = await sign(params.payload, did, secretKey, isPIN, params.protected);
         return { jws: toGeneralJWS(jws) };
     },
     did_decryptJWE: async ({ secretKey }, params) => {
@@ -89,10 +89,11 @@ exports.RSAKeyGenerator = RSAKeyGenerator;
  * RSA DID Key Provider
  */
 class RSAProvider {
-    constructor(publicKey, privateKey, pub, pem) {
+    constructor(pub, pem, pin) {
         const did = encodeDID(pub, pem);
         const handler = rpc_utils_1.createHandler(didMethods);
-        this._handle = async (msg) => await handler({ did, secretKey: pem }, msg);
+        const isPIN = pin ? true : false;
+        this._handle = async (msg) => handler({ did, secretKey: pem || pin, isPIN }, msg);
     }
     get isDidProvider() {
         return true;

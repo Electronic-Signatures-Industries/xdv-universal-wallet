@@ -12,7 +12,7 @@ XDV Universal Wallet
 * DID and IPLD ready
 * Supports ES256K, Ed25519 and RS256
 * Aggregation signatures - BLS
-
+* Signs hardware based PKCS#11 using XDV Signer
 
 
 ## Quickstart
@@ -156,6 +156,33 @@ Parameters
 * `registry`: Contract address for EVM compatible ethr-did registry
 
 ### 3id/DIDManager
+
+
+#### async create3ID_RSA(kp: any)
+  
+Creates a RS256 did
+
+Parameter
+
+* `kp`: RSA keypair
+
+Returns a `DIDContext`
+
+* `did`: A DID object from 3ID library. Allows to authenticate and sign with IPLD
+* `issuer`: A DID object for issue signers
+
+
+#### async create3ID_PKCS11(pin: any)
+  
+Creates a RS256 did from a HSM
+
+Parameter
+
+* `pin`: HSM pin
+
+Returns a `DIDContext`
+
+* `did`: A DID object from 3ID library. Allows to authenticate and sign with IPLD
 
 ### 3id/DriveManager
 

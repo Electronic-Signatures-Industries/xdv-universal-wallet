@@ -1,4 +1,5 @@
 import { DIDManager } from './DIDManager'
+import { IPLDManager } from './IPLDManager';
 
 async function bootstrap() {
     const didManager = new DIDManager();
@@ -22,6 +23,19 @@ async function pkcs11() {
     });
     console.log(res);
     console.log(didRSA.did.id);
+    const ipfsManager = new IPLDManager(didRSA.did)
+    await ipfsManager.start()
+
+    const fil = Buffer.from('Hola IPFS World!')
+    // auth
+    const cid = await ipfsManager.addSignedObject(fil, {
+      name: 'UnitTest.txt',
+      contentType: 'text/html',
+      lastModified: new Date(),
+    })
+    const res2 = await ipfsManager.getObject(cid)
+    console.log(cid, res2)
+
 }
 
 

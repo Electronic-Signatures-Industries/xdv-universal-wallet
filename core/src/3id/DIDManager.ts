@@ -57,7 +57,7 @@ export class DIDManager {
       signer: (data: Uint8Array) => {
         return keypair.sign(data)
       },
-      alg: 'RSA',
+      alg: 'RS256',
       did: did.id,
     })
 

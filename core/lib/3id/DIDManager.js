@@ -9,6 +9,7 @@ const key_did_resolver_1 = tslib_1.__importDefault(require("key-did-resolver"));
 const ethr_did_1 = tslib_1.__importDefault(require("ethr-did"));
 const RSAKeyProvider_1 = require("../did/RSAKeyProvider");
 const dids_1 = require("did-jwt-rsa/lib/dids");
+const SmartcardConnector_1 = require("../did/SmartcardConnector");
 const DID_LD_JSON = 'application/did+ld+json';
 const DID_JSON = 'application/did+json';
 const varint = require('varint');
@@ -42,7 +43,7 @@ class DIDManager {
         if (kp) {
             keypair = kp;
         }
-        const provider = new RSAKeyProvider_1.RSAProvider(new Uint8Array(keypair.publicDer), new Uint8Array(keypair.privateDer), keypair.publicPem, keypair.pem);
+        const provider = new RSAKeyProvider_1.RSAProvider(keypair.publicPem, keypair.pem);
         const did = new dids_1.DID({
             provider,
             resolver: this.rsaGetResolver(keypair.publicPem),
@@ -57,6 +58,32 @@ class DIDManager {
         return {
             did,
             getIssuer: issuer,
+        };
+    }
+    base64toPem(base64) {
+        for (var result = "", lines = 0; result.length - lines < base64.length; lines++) {
+            result += base64.substr(result.length - lines, 64) + "\n";
+        }
+        return "-----BEGIN PUBLIC KEY-----\n" + result + "-----END PUBLIC KEY-----";
+    }
+    /**
+     * Create 3ID
+     * using XDV
+     * @param kp RSA keypair
+     */
+    async create3ID_PKCS11(pin) {
+        const sc = new SmartcardConnector_1.SmartCardConnectorPKCS11();
+        await sc.connect();
+        const certs = await sc.getCerts('0', pin);
+        const publicPem = this.base64toPem(certs.publicKey);
+        const provider = new RSAKeyProvider_1.RSAProvider(publicPem, null, pin);
+        const did = new dids_1.DID({
+            provider,
+            // @ts-ignore
+            resolver: this.rsaGetResolver(publicPem),
+        });
+        return {
+            did,
         };
     }
     // @molekilla, 2021
@@ -76,6 +103,7 @@ class DIDManager {
                         controller: did,
                         publicKeyBase58: u8a.toString(pubKeyBytes, 'base58btc'),
                         publicKeyPem,
+                        publicKeyHex: u8a.toString(pubKeyBytes, 'base64')
                     },
                 ],
                 authentication: [keyId],

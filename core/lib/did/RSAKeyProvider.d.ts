@@ -17,7 +17,7 @@ export declare class RSAKeyGenerator {
  */
 export declare class RSAProvider implements DIDProvider {
     _handle: any;
-    constructor(publicKey: Uint8Array, privateKey: Uint8Array, pub: string, pem: string);
+    constructor(pub: string, pem: string, pin?: string);
     get isDidProvider(): boolean;
     send(msg: any): Promise<any>;
 }

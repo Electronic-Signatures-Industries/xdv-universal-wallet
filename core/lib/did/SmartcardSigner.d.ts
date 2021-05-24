@@ -3,7 +3,7 @@
  * @param key
  * @returns
  */
-export declare function RSASigner(pem: string): (data: Uint8Array) => Promise<string>;
+export declare function RSASigner(pem: string, isPIN: boolean): Promise<(data: Uint8Array) => Promise<any>>;
 /**
  * Smartcard RSA Signer
  * @param key

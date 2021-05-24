@@ -18,6 +18,13 @@ export declare class DIDManager {
      * @param kp RSA keypair
      */
     create3ID_RSA(kp?: any): Promise<DIDContext>;
+    base64toPem(base64: any): string;
+    /**
+     * Create 3ID
+     * using XDV
+     * @param kp RSA keypair
+     */
+    create3ID_PKCS11(pin: string): Promise<DIDContext>;
     rsaGetResolver(publicKeyPem: any): {
         key: (did: any, parsed: any, resolver: any, options: any) => Promise<any>;
     };
