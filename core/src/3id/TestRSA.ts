@@ -14,7 +14,7 @@ async function bootstrap() {
 
 async function pkcs11() {
     const didManager = new DIDManager();
-    const pin = '18586874'
+    const pin = '18586874111'
     const didRSA = await didManager.create3ID_PKCS11(pin);
     await didRSA.did.authenticate();
     const res = await didRSA.did.createDagJWS({
