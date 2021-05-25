@@ -52,7 +52,7 @@ class DIDManager {
             signer: (data) => {
                 return keypair.sign(data);
             },
-            alg: 'RSA',
+            alg: 'RS256',
             did: did.id,
         });
         return {
