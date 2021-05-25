@@ -1,5 +1,4 @@
 
-import { VerifiableCredential } from 'did-jwt-vc'
 import { KeystoreDbModel, Wallet } from './Wallet'
 import {
   IIssueProps,
@@ -69,10 +68,10 @@ export class UniversalWallet extends Wallet implements IUniversalWallet {
   verifyRaw(buf: Uint8Array, options: ISignerProps): Promise<object> {
     throw new Error('Method not implemented.')
   }
-  verify(vc: VerifiableCredential): Promise<object> {
+  verify(vc: any): Promise<object> {
     throw new Error('Method not implemented.')
   }
-  issue(vc: VerifiableCredential, options: IIssueProps): Promise<object> {
+  issue(vc: any, options: IIssueProps): Promise<object> {
     throw new Error('Method not implemented.')
   }
   prove(ids: string[], options: IIssueProps): Promise<object> {

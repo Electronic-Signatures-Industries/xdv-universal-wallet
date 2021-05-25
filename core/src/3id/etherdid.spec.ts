@@ -97,8 +97,6 @@ describe('DID specs', function () {
       delegateType: '',
       expiresIn: since,
     });
-
-    expect(result.id.length).toBeGreaterThan(0)
   })
 })
 ///

@@ -1,6 +1,6 @@
 {
    "name": "xdv-universal-wallet-core",
-   "version": "0.4.3",
+   "version": "0.4.4",
    "description": "The base business logic for the universal wallet",
    "main": "lib/index.js",
    "scripts": {
@@ -46,7 +46,6 @@
       "dag-jose-utils": "^0.1.1",
       "did-jwt": "5.1.2",
       "did-jwt-rsa": "^0.1.9",
-      "did-jwt-vc": "^2.1.0",
       "did-resolver": "^3.1.0",
       "ec-key": "0.0.4",
       "ed25519-hd-key": "^1.1.2",

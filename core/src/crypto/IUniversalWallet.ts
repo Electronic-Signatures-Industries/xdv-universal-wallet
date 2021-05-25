@@ -1,4 +1,4 @@
-import { VerifiableCredential, VerifiedPresentation } from 'did-jwt-vc'
+// import { any, VerifiedPresentation } from 'did-jwt-vc'
 
 export interface ISignerProps {
   verificationMethod: string
@@ -37,9 +37,9 @@ export interface IUniversalWallet {
   lock(walletId: string): Promise<object>
   signRaw(buf: Uint8Array, options: ISignerProps): Promise<object>
   verifyRaw(buf: Uint8Array, options: ISignerProps): Promise<object>
-  verify(vc: VerifiableCredential): Promise<object>
+  verify(vc: any): Promise<object>
   issue(
-    vc: VerifiableCredential,
+    vc: any,
     options: IIssueProps,
   ): Promise<object>
   prove(ids: string[], options: IIssueProps): Promise<object>
