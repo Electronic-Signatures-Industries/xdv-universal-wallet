@@ -32,7 +32,7 @@ function toGeneralJWS(jws) {
 }
 const sign = async (payload, did, secretKey, isPIN, protectedHeader = {}) => {
     const kid = `${did}#${did.split(':')[2]}`;
-    const signer = await SmartcardSigner_1.RSASigner(secretKey, isPIN);
+    const signer = (await SmartcardSigner_1.RSASigner(secretKey, isPIN));
     const header = toStableObject(Object.assign(protectedHeader, { kid, alg: 'RS256' }));
     const jws = did_jwt_rsa_1.createJWS(toStableObject(payload), signer, header);
     return jws;
@@ -42,6 +42,7 @@ const didMethods = {
     did_authenticate: async ({ did, secretKey, isPIN }, params) => {
         const response = await sign({
             did,
+            iss: did,
             aud: params.aud,
             nonce: params.nonce,
             paths: params.paths,

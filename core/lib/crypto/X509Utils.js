@@ -5,15 +5,16 @@ const tslib_1 = require("tslib");
 const jsrsasign_1 = tslib_1.__importDefault(require("jsrsasign"));
 const node_forge_1 = tslib_1.__importDefault(require("node-forge"));
 class X509Utils {
-    static async verifyChain(data, sig, certificate, certificateChain) {
+    static async verifyChain(data, signature, certificate, certificateChain) {
         const caStore = node_forge_1.default.pki.createCaStore(certificateChain);
         // RSA signature generation
-        const rsa = new jsrsasign_1.default.Signature({ alg: 'SHA256withRSA' });
-        const pub = caStore.listAllCertificates()[3];
-        rsa.init(certificate);
-        rsa.updateHex(data);
-        const isValid = rsa.verify(Buffer.from(sig).toString('hex'));
         const c = node_forge_1.default.pki.certificateFromPem(certificate);
+        const pubKeyObj = jsrsasign_1.default.KEYUTIL.getKey(certificate);
+        const acceptField = { alg: [] };
+        acceptField.alg = ['RS256', 'RS384', 'RS512',
+            'PS256', 'PS384', 'PS512',
+            'ES256', 'ES384', 'ES512'];
+        const isValid = jsrsasign_1.default.jws.JWS.verify(`${data}.${signature}`, pubKeyObj, acceptField);
         return new Promise((resolve, reject) => {
             node_forge_1.default.pki.verifyCertificateChain(caStore, [c], (vfd, depth, chain) => {
                 const verificationReport = [];
@@ -53,7 +54,7 @@ class X509Utils {
                         title: `Invalid subject key identifier`,
                     });
                 }
-                if (vfd && vfd.indexOf('UnknownCertificateAuth') === -1) {
+                if (vfd) {
                     verificationReport.push({
                         title: `Verified certificate chain issued by`,
                         subtitle: `C=${subjectCert.issuer.attributes[0].value}, O=${subjectCert.issuer.attributes[1].value},

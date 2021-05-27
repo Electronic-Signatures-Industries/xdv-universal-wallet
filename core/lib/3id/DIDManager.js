@@ -84,6 +84,7 @@ class DIDManager {
         });
         return {
             did,
+            certificate: certs.publicKey2
         };
     }
     // @molekilla, 2021

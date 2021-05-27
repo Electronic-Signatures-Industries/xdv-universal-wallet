@@ -110,6 +110,14 @@ class IPLDManager {
         res.payload = Object.assign({}, temp);
         return temp;
     }
+    /**
+     * Get IPLD object
+     * @param cid content id
+     */
+    async get(cid) {
+        let temp = await this.client.dag.get(cid);
+        return temp;
+    }
     verify(obj) {
         return this.did.verifyJWS(obj.metadata);
     }

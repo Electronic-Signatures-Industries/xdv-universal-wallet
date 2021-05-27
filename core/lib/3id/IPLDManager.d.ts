@@ -53,6 +53,11 @@ export declare class IPLDManager {
      * @param cid content id
      */
     getObject(cid: string): Promise<any>;
+    /**
+     * Get IPLD object
+     * @param cid content id
+     */
+    get(cid: string): Promise<any>;
     verify(obj: any): Promise<any>;
     encryptObject(cleartext: any, dids: string[]): Promise<any>;
     decryptObject(didInstance: DID, cid: any, query: any): Promise<{

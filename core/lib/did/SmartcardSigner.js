@@ -14,7 +14,9 @@ async function RSASigner(pem, isPIN) {
     if (isPIN) {
         const sc = new SmartcardConnector_1.SmartCardConnectorPKCS11();
         await sc.connect();
-        return async (data) => JSON.parse((await sc.signPromise('0', pem, (data))).signature);
+        return async (data) => {
+            return JSON.parse((await sc.signPromise('0', pem, (data))).signature);
+        };
     }
     const keyImport = new NodeRSA(pem);
     return async (data) => base64url_1.default.encode(await keyImport.sign(data));
