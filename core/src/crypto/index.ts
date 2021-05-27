@@ -1,3 +1,4 @@
+export * from './X509Utils'
 export * from './JOSEService';
 export * from './JWTDocument';
 export * from './JWTHeader';

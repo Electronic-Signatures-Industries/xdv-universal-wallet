@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const tslib_1 = require("tslib");
+tslib_1.__exportStar(require("./SmartcardConnector"), exports);
 tslib_1.__exportStar(require("./Authentication"), exports);
 tslib_1.__exportStar(require("./DIDDocument"), exports);
 tslib_1.__exportStar(require("./DIDDocumentBuilder"), exports);

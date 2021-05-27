@@ -1,3 +1,4 @@
+export * from './SmartcardConnector';
 export * from './Authentication';
 export * from './DIDDocument';
 export * from './DIDDocumentBuilder';
