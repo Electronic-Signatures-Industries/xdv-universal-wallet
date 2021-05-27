@@ -1,21 +1,22 @@
-import r from 'jsrsasign'
+import rs from 'jsrsasign'
 import forge from 'node-forge'
 export class X509Utils {
   static async verifyChain(
-    data: Uint8Array,
-    sig: Uint8Array,
-    certificate: any,
-    certificateChain: [any],
+    data: string,
+    signature: string,
+    certificate: string,
+    certificateChain: Array<string>,
   ) {
     const caStore = forge.pki.createCaStore(certificateChain)
     // RSA signature generation
-    const rsa = new r.Signature({ alg: 'SHA256withRSA' })
-    const pub = caStore.listAllCertificates()[3]
-    rsa.init(certificate)
-    rsa.updateHex(data)
-    const isValid = rsa.verify(Buffer.from(sig).toString('hex'))
-
     const c = forge.pki.certificateFromPem(certificate)
+    const pubKeyObj = rs.KEYUTIL.getKey(certificate);
+    const acceptField = { alg: [] }
+    acceptField.alg = ['RS256', 'RS384', 'RS512',
+                     'PS256', 'PS384', 'PS512',
+                     'ES256', 'ES384', 'ES512'];
+    const isValid = rs.jws.JWS.verify(`${data}.${signature}`, pubKeyObj, acceptField);
+
 
     return new Promise((resolve, reject) => {
       forge.pki.verifyCertificateChain(caStore, [c], (vfd, depth, chain) => {
@@ -58,7 +59,7 @@ export class X509Utils {
             title: `Invalid subject key identifier`,
           })
         }
-        if (vfd && vfd.indexOf('UnknownCertificateAuth') === -1) {
+        if (vfd) {
           verificationReport.push({
             title: `Verified certificate chain issued by`,
             subtitle: `C=${subjectCert.issuer.attributes[0].value}, O=${subjectCert.issuer.attributes[1].value},

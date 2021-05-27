@@ -143,7 +143,14 @@ export class IPLDManager {
 
         return temp;
     }
-
+    /**
+     * Get IPLD object
+     * @param cid content id
+     */
+     async get(cid: string): Promise<any> {
+        let temp = await this.client.dag.get(cid);
+        return temp;
+    }
     verify(obj: any): Promise<any> {
         return this.did.verifyJWS(obj.metadata);
     }

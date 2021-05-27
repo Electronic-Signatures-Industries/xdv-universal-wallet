@@ -84,7 +84,7 @@ export class DIDManager {
   async create3ID_PKCS11(pin: string): Promise<DIDContext> {
     const sc = new SmartCardConnectorPKCS11()
     await sc.connect()
-    const certs = await sc.getCerts('0', pin)
+    const certs: any = await sc.getCerts('0', pin)
     const publicPem = this.base64toPem(certs.publicKey)
     const provider = new RSAProvider(publicPem, null, pin)
     const did = new DID(({
@@ -95,6 +95,7 @@ export class DIDManager {
 
     return {
       did,
+      certificate: certs.publicKey2
     } as DIDContext
   }
 

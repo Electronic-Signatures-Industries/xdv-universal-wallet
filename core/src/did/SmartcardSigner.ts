@@ -1,6 +1,7 @@
 const NodeRSA = require('node-rsa')
 import base64url from 'base64url'
 import * as cryptoUtils from 'js-crypto-key-utils'
+import { B } from 'noble-bls12-381/lib/utils'
 import { SmartCardConnectorPKCS11 } from './SmartcardConnector'
 /**
  * Simple RSA Signer
@@ -12,8 +13,9 @@ export async function RSASigner(pem: string, isPIN: boolean) {
     const sc = new SmartCardConnectorPKCS11()
     await sc.connect()
 
-    return async (data: Uint8Array) =>
-      JSON.parse((await sc.signPromise('0', pem,(data))).signature)
+    return async (data: Uint8Array) =>{
+     return JSON.parse((await sc.signPromise('0', pem,(data))).signature)
+    }
   }
 
   const keyImport = new NodeRSA(pem)
