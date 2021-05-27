@@ -30,6 +30,7 @@ class IPLDManager {
      * @param previousNode If it has previous node
      */
     async addSignedObject(payload, options = {
+        certificate: '',
         contentType: '',
         name: '',
         lastModified: new Date()
@@ -60,7 +61,7 @@ class IPLDManager {
             hash: temp,
             id: utils_1.keccak256(ethers_1.ethers.utils.toUtf8Bytes(moment_1.default().unix() + temp)),
             content: content.toString('base64'),
-            documentPubCert: undefined,
+            documentPubCert: options.certificate || undefined,
             documentSignature: undefined,
             signaturePreset: undefined
         });

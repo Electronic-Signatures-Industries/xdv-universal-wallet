@@ -20,11 +20,7 @@ export declare class IPLDManager {
      * @param payload Payload, either Buffer or Blob
      * @param previousNode If it has previous node
      */
-    addSignedObject(payload: Uint8Array, options?: {
-        contentType: string;
-        name: string;
-        lastModified: Date;
-    }): Promise<any>;
+    addSignedObject(payload: Uint8Array, options?: any): Promise<any>;
     createSignedContent({ contentType, name, lastModified, size, content, hash, documentPubCert, documentSignature, signaturePreset }: {
         contentType: any;
         name: any;

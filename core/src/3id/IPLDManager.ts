@@ -40,7 +40,8 @@ export class IPLDManager {
      */
     async addSignedObject(
         payload: Uint8Array,
-        options = {
+        options: any = {
+            certificate:  '',
             contentType: '',
             name: '',
             lastModified: new Date()
@@ -74,7 +75,7 @@ export class IPLDManager {
             hash: temp,
             id: keccak256(ethers.utils.toUtf8Bytes(moment().unix() + temp)),
             content: content.toString('base64'),
-            documentPubCert: undefined,
+            documentPubCert: options.certificate || undefined,
             documentSignature: undefined,
             signaturePreset: undefined
         });
