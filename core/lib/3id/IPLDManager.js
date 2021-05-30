@@ -7,12 +7,19 @@ const moment_1 = tslib_1.__importDefault(require("moment"));
 const ipfs_http_client_1 = tslib_1.__importDefault(require("ipfs-http-client"));
 const utils_1 = require("ethers/lib/utils");
 const multicodec = require('multicodec');
+/**
+ * XDV IPLD Manager
+ */
 class IPLDManager {
     constructor(did) {
         this.did = did;
     }
+    /**
+     * Starts IPFS Client
+     * @param hostname
+     */
     async start(hostname) {
-        this.client = ipfs_http_client_1.default({ url: hostname || `http://ifesa.ipfs.pa:5001` });
+        this.client = ipfs_http_client_1.default({ url: hostname });
     }
     /**
      * Converts Blob to Keccak 256 hash
@@ -33,14 +40,14 @@ class IPLDManager {
         certificate: '',
         contentType: '',
         name: '',
-        lastModified: new Date()
+        lastModified: new Date(),
     }) {
         let temp;
         let content;
         // if (payload instanceof File) {
         //     temp = await this.blobToKeccak256(payload);
         //     content = Buffer.from((await payload.arrayBuffer()));
-        // } else 
+        // } else
         if (payload instanceof Uint8Array) {
             temp = utils_1.keccak256(payload);
             content = Buffer.from(payload);
@@ -50,28 +57,20 @@ class IPLDManager {
         }
         temp = temp.replace('0x', '');
         // sign the payload as dag-cbor
-        const { jws, linkedBlock } = await this.did.createDagJWS({
+        const { jws, linkedBlock } = await this.did.createDagJWS(Object.assign({ 
             // @ts-ignore
-            contentType: options.contentType || payload.type,
+            contentType: options.contentType || payload.type, 
             // @ts-ignore
-            name: options.name || payload.name,
+            name: options.name || payload.name, 
             // @ts-ignore
-            lastModified: options.lastModified || payload.lastModified,
-            timestamp: moment_1.default().unix(),
-            hash: temp,
-            id: utils_1.keccak256(ethers_1.ethers.utils.toUtf8Bytes(moment_1.default().unix() + temp)),
-            content: content.toString('base64'),
-            documentPubCert: options.certificate || undefined,
-            documentSignature: undefined,
-            signaturePreset: undefined
-        });
+            lastModified: options.lastModified || payload.lastModified, timestamp: moment_1.default().unix(), hash: temp, id: utils_1.keccak256(ethers_1.ethers.utils.toUtf8Bytes(moment_1.default().unix() + temp)), content: content.toString('base64'), documentPubCert: options.certificate || undefined }, options));
         // put the JWS into the ipfs dag
         const jwsCid = await this.client.dag.put(jws, multicodec.DAG_CBOR);
         // put the payload into the ipfs dag
         await this.client.block.put(linkedBlock, { cid: jws.link });
-        return jwsCid.toString();
+        return jwsCid;
     }
-    createSignedContent({ contentType, name, lastModified, size, content, hash, documentPubCert, documentSignature, signaturePreset }) {
+    createSignedContent({ contentType, name, lastModified, size, content, hash, documentPubCert, documentSignature, signaturePreset, }) {
         return {
             contentType,
             name,
@@ -88,7 +87,7 @@ class IPLDManager {
     async addIndex(documents) {
         // sign the payload as dag-cbor
         const { jws, linkedBlock } = await this.did.createDagJWS({
-            documents
+            documents,
         });
         // put the JWS into the ipfs dag
         const jwsCid = await this.client.dag.put(jws, multicodec.DAG_CBOR);
@@ -105,7 +104,7 @@ class IPLDManager {
         let temp = await this.client.dag.get(cid);
         const res = {
             metadata: Object.assign({}, temp),
-            payload: undefined
+            payload: undefined,
         };
         temp = await this.client.dag.get(cid, { path: '/link' });
         res.payload = Object.assign({}, temp);
@@ -140,7 +139,7 @@ class IPLDManager {
         // sign the payload as dag-cbor
         const cid = await this.client.add({
             path: 'index.json',
-            content
+            content,
         });
         return cid.toString();
     }

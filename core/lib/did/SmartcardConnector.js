@@ -11,6 +11,10 @@ class SmartCardConnectorPKCS11 {
         this.subscribe = new rxjs_1.Subject();
         this.keyId = keyId;
     }
+    /**
+     * Request current HSM / Smartcards slots
+     * @returns void
+     */
     async getSlots() {
         // const slots = await axios(`${CLIENT_API}/sc/get_slots`);
         if (!this.stompClient.connected) {
@@ -21,6 +25,13 @@ class SmartCardConnectorPKCS11 {
             skipContentLengthHeader: true,
         });
     }
+    /**
+     *
+     * @param index Slot index
+     * @param pin PIN
+     * @param data Data as Uint8Array
+     * @returns A Promise<SignResponse>
+     */
     async signPromise(index, pin, data) {
         return new Promise((resolve, reject) => {
             const c = this.stompClient.subscribe('/xdv/signed', (res) => {
@@ -37,6 +48,12 @@ class SmartCardConnectorPKCS11 {
             });
         });
     }
+    /**
+     * Get certificates
+     * @param index Slot index
+     * @param pin PIN
+     * @returns A Promise<SignResponse>
+     */
     async getCerts(index, pin) {
         return new Promise((resolve, reject) => {
             const c = this.stompClient.subscribe('/xdv/certificates', (data) => {
@@ -62,6 +79,10 @@ class SmartCardConnectorPKCS11 {
             }),
         });
     }
+    /**
+     * Connects to Java Signer
+     * @returns A Promise
+     */
     connect() {
         return new Promise((resolve, reject) => {
             try {

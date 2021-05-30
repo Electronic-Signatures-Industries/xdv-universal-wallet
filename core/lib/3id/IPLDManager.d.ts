@@ -2,12 +2,20 @@
 /// <reference types="pouchdb-core" />
 import { DID } from 'did-jwt-rsa/lib/dids';
 import { ethers } from 'ethers';
+import CID from 'cids';
+/**
+ * XDV IPLD Manager
+ */
 export declare class IPLDManager {
     client: any;
     provider: ethers.providers.JsonRpcProvider;
     ipld: any;
     did: DID;
     constructor(did: DID);
+    /**
+     * Starts IPFS Client
+     * @param hostname
+     */
     start(hostname?: string): Promise<void>;
     /**
      * Converts Blob to Keccak 256 hash
@@ -20,8 +28,8 @@ export declare class IPLDManager {
      * @param payload Payload, either Buffer or Blob
      * @param previousNode If it has previous node
      */
-    addSignedObject(payload: Uint8Array, options?: any): Promise<any>;
-    createSignedContent({ contentType, name, lastModified, size, content, hash, documentPubCert, documentSignature, signaturePreset }: {
+    addSignedObject(payload: Uint8Array, options?: any): Promise<CID>;
+    createSignedContent({ contentType, name, lastModified, size, content, hash, documentPubCert, documentSignature, signaturePreset, }: {
         contentType: any;
         name: any;
         lastModified: any;

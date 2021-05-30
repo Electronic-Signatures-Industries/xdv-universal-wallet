@@ -18,11 +18,10 @@ const multibase = require('multibase')
  * Manages DIDs
  */
 export class DIDManager {
+
   /**
-   * Create DID
+   * Creates a did-ethr
    * using XDV
-   * @param privateKeyBytes EdDSA secret
-   * @param privateKeyHex EdDSA secret hex
    */
   createEthrDID(
     address: string,
@@ -38,6 +37,7 @@ export class DIDManager {
     })
     return did
   }
+
   /**
    * Create 3ID
    * using XDV
@@ -117,7 +117,6 @@ export class DIDManager {
             controller: did,
             publicKeyBase58: u8a.toString(pubKeyBytes, 'base58btc'),
             publicKeyPem,
-            publicKeyHex: u8a.toString(pubKeyBytes,'base64')
           },
         ],
         authentication: [keyId],

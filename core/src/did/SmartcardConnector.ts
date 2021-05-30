@@ -1,11 +1,11 @@
 import { CompatClient, Stomp } from '@stomp/stompjs'
-import * as u8a from 'uint8arrays'
-
 import { Subject } from 'rxjs'
 Object.assign(global, { WebSocket: require('websocket').w3cwebsocket })
 
 export interface SignResponse {
   publicKey: string
+  publicKey2?: string
+  certificate?: string
   signature: string
   digest: string
   type: string
@@ -25,6 +25,10 @@ export class SmartCardConnectorPKCS11 {
     this.keyId = keyId
   }
 
+  /**
+   * Request current HSM / Smartcards slots
+   * @returns void
+   */
   async getSlots(): Promise<void> {
     // const slots = await axios(`${CLIENT_API}/sc/get_slots`);
     if (!this.stompClient.connected) {
@@ -36,6 +40,13 @@ export class SmartCardConnectorPKCS11 {
     })
   }
 
+  /**
+   * 
+   * @param index Slot index
+   * @param pin PIN
+   * @param data Data as Uint8Array
+   * @returns A Promise<SignResponse>
+   */
   async signPromise(
     index: string,
     pin: string,
@@ -58,6 +69,12 @@ export class SmartCardConnectorPKCS11 {
     })
   }
 
+  /**
+   * Get certificates
+   * @param index Slot index
+   * @param pin PIN
+   * @returns A Promise<SignResponse>
+   */
   async getCerts(index: string, pin: string): Promise<SignResponse> {
     return new Promise((resolve, reject) => {
       const c = this.stompClient.subscribe('/xdv/certificates', (data: any) => {
@@ -86,6 +103,10 @@ export class SmartCardConnectorPKCS11 {
     })
   }
 
+  /**
+   * Connects to Java Signer
+   * @returns A Promise
+   */
   connect() {
     return new Promise((resolve, reject) => {
       try {

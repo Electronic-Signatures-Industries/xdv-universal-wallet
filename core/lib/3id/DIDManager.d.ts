@@ -6,10 +6,8 @@ import { DIDContext } from './DIDContext';
  */
 export declare class DIDManager {
     /**
-     * Create DID
+     * Creates a did-ethr
      * using XDV
-     * @param privateKeyBytes EdDSA secret
-     * @param privateKeyHex EdDSA secret hex
      */
     createEthrDID(address: string, ecKP: ec.KeyPair, registry: string, rpcUrl: string): EthrDID;
     /**

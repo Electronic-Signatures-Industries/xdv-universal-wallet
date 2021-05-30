@@ -19,10 +19,8 @@ const multibase = require('multibase');
  */
 class DIDManager {
     /**
-     * Create DID
+     * Creates a did-ethr
      * using XDV
-     * @param privateKeyBytes EdDSA secret
-     * @param privateKeyHex EdDSA secret hex
      */
     createEthrDID(address, ecKP, registry, rpcUrl) {
         const did = new ethr_did_1.default({
@@ -104,7 +102,6 @@ class DIDManager {
                         controller: did,
                         publicKeyBase58: u8a.toString(pubKeyBytes, 'base58btc'),
                         publicKeyPem,
-                        publicKeyHex: u8a.toString(pubKeyBytes, 'base64')
                     },
                 ],
                 authentication: [keyId],

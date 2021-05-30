@@ -3,182 +3,186 @@ import legacy from 'multiformats/cjs/src/legacy'
 import { DID } from 'did-jwt-rsa/lib/dids'
 import { ethers } from 'ethers'
 import moment from 'moment'
-import IPFSClient from 'ipfs-http-client';
+import IPFSClient from 'ipfs-http-client'
 import { keccak256 } from 'ethers/lib/utils'
+import CID from 'cids'
 const multicodec = require('multicodec')
 
-
+/**
+ * XDV IPLD Manager
+ */
 export class IPLDManager {
-    client: any;
-    provider: ethers.providers.JsonRpcProvider;
-    ipld: any;
-    did: DID;
+  client: any
+  provider: ethers.providers.JsonRpcProvider
+  ipld: any
+  did: DID
 
-    constructor (did: DID) {
-        this.did = did;
-    }
+  constructor(did: DID) {
+    this.did = did
+  }
 
-    async start(hostname?: string){
-       this.client = IPFSClient({ url: hostname || `http://ifesa.ipfs.pa:5001` });
-    }
+  /**
+   * Starts IPFS Client
+   * @param hostname
+   */
+  async start(hostname?: string) {
+    this.client = IPFSClient({ url: hostname })
+  }
 
-    /**
-     * Converts Blob to Keccak 256 hash
-     * @param payload 
-     */
-    async blobToKeccak256(payload: Blob): Promise<string> {
-        let ab = await payload.arrayBuffer();
-        let buf = new Uint8Array(ab);
-        return keccak256(buf) as string;
-    }
+  /**
+   * Converts Blob to Keccak 256 hash
+   * @param payload
+   */
+  async blobToKeccak256(payload: Blob): Promise<string> {
+    let ab = await payload.arrayBuffer()
+    let buf = new Uint8Array(ab)
+    return keccak256(buf) as string
+  }
 
-    /**
-     * Add Signed Object
-     * @param did DID
-     * @param payload Payload, either Buffer or Blob 
-     * @param previousNode If it has previous node
-     */
-    async addSignedObject(
-        payload: Uint8Array,
-        options: any = {
-            certificate:  '',
-            contentType: '',
-            name: '',
-            lastModified: new Date()
-        } ) {
-        let temp: string;
-        let content: Buffer;
 
-        // if (payload instanceof File) {
-        //     temp = await this.blobToKeccak256(payload);
-        //     content = Buffer.from((await payload.arrayBuffer()));
-        // } else 
-        
-        if (payload instanceof Uint8Array) {
-            temp = keccak256(payload);
-            content = Buffer.from(payload);
-        }
-        else {
-            throw new Error('addSignedObject: must be a file object or Uint8Array');
-        }
-        temp = temp.replace('0x', '');
-        // sign the payload as dag-cbor
-        
-        const { jws, linkedBlock } = await this.did.createDagJWS({
-            // @ts-ignore
-            contentType: options.contentType ||  payload.type,
-            // @ts-ignore
-            name: options.name || payload.name,
-            // @ts-ignore
-            lastModified: options.lastModified || payload.lastModified,
-            timestamp: moment().unix(),
-            hash: temp,
-            id: keccak256(ethers.utils.toUtf8Bytes(moment().unix() + temp)),
-            content: content.toString('base64'),
-            documentPubCert: options.certificate || undefined,
-            documentSignature: undefined,
-            signaturePreset: undefined
-        });
-        // put the JWS into the ipfs dag
-        const jwsCid = await this.client.dag.put(jws, multicodec.DAG_CBOR);
-        // put the payload into the ipfs dag
-        await this.client.block.put(linkedBlock, { cid: jws.link })
-        return jwsCid.toString();
-    }
+  /**
+   * Add Signed Object
+   * @param did DID
+   * @param payload Payload, either Buffer or Blob
+   * @param previousNode If it has previous node
+   */
+  async addSignedObject(
+    payload: Uint8Array,
+    options: any = {
+      certificate: '',
+      contentType: '',
+      name: '',
+      lastModified: new Date(),
+    },
+  ) {
+    let temp: string
+    let content: Buffer
 
-    createSignedContent({
-        contentType,
-        name,
-        lastModified,
-        size,
-        content,
-        hash,
-        documentPubCert,
-        documentSignature,
-        signaturePreset
-    }) {
-        return {
-            contentType,
-            name,
-            lastModified,
-            size,
-            content,
-            hash,
-            created: moment().unix(),
-            documentPubCert,
-            documentSignature,
-            signaturePreset,
-        };
-    }
+    // if (payload instanceof File) {
+    //     temp = await this.blobToKeccak256(payload);
+    //     content = Buffer.from((await payload.arrayBuffer()));
+    // } else
 
-    async addIndex(
-        documents: any[]) {
-        // sign the payload as dag-cbor
-        const { jws, linkedBlock } = await this.did.createDagJWS({
-            documents
-        });
-        
-        // put the JWS into the ipfs dag
-        const jwsCid = await this.client.dag.put(jws, multicodec.DAG_CBOR);
-        // put the payload into the ipfs dag
-        await this.client.blocks.put(linkedBlock, { cid: jws.link });
-        const cid = jwsCid.toString()
-        return cid;
+    if (payload instanceof Uint8Array) {
+      temp = keccak256(payload)
+      content = Buffer.from(payload)
+    } else {
+      throw new Error('addSignedObject: must be a file object or Uint8Array')
     }
-    /**
-     * Get IPLD object
-     * @param cid content id
-     */
-    async getObject(cid: string): Promise<any> {
-        let temp = await this.client.dag.get(cid);
-        const res = {
-            metadata: {
-                ...temp,
-            },
-            payload: undefined
-        }
-        temp = await this.client.dag.get(cid, { path: '/link' });
-        res.payload = {
-            ...temp,
-        };
+    temp = temp.replace('0x', '')
+    // sign the payload as dag-cbor
 
-        return temp;
+    const { jws, linkedBlock } = await this.did.createDagJWS({
+      // @ts-ignore
+      contentType: options.contentType || payload.type,
+      // @ts-ignore
+      name: options.name || payload.name,
+      // @ts-ignore
+      lastModified: options.lastModified || payload.lastModified,
+      timestamp: moment().unix(),
+      hash: temp,
+      id: keccak256(ethers.utils.toUtf8Bytes(moment().unix() + temp)),
+      content: content.toString('base64'),
+      documentPubCert: options.certificate || undefined,
+      ...options
+    })
+    // put the JWS into the ipfs dag
+    const jwsCid = await this.client.dag.put(jws, multicodec.DAG_CBOR)
+    // put the payload into the ipfs dag
+    await this.client.block.put(linkedBlock, { cid: jws.link })
+    return jwsCid as CID;
+  }
+
+  createSignedContent({
+    contentType,
+    name,
+    lastModified,
+    size,
+    content,
+    hash,
+    documentPubCert,
+    documentSignature,
+    signaturePreset,
+  }) {
+    return {
+      contentType,
+      name,
+      lastModified,
+      size,
+      content,
+      hash,
+      created: moment().unix(),
+      documentPubCert,
+      documentSignature,
+      signaturePreset,
     }
-    /**
-     * Get IPLD object
-     * @param cid content id
-     */
-     async get(cid: string): Promise<any> {
-        let temp = await this.client.dag.get(cid);
-        return temp;
+  }
+
+  async addIndex(documents: any[]) {
+    // sign the payload as dag-cbor
+    const { jws, linkedBlock } = await this.did.createDagJWS({
+      documents,
+    })
+
+    // put the JWS into the ipfs dag
+    const jwsCid = await this.client.dag.put(jws, multicodec.DAG_CBOR)
+    // put the payload into the ipfs dag
+    await this.client.blocks.put(linkedBlock, { cid: jws.link })
+    const cid = jwsCid.toString()
+    return cid
+  }
+  /**
+   * Get IPLD object
+   * @param cid content id
+   */
+  async getObject(cid: string): Promise<any> {
+    let temp = await this.client.dag.get(cid)
+    const res = {
+      metadata: {
+        ...temp,
+      },
+      payload: undefined,
     }
-    verify(obj: any): Promise<any> {
-        return this.did.verifyJWS(obj.metadata);
+    temp = await this.client.dag.get(cid, { path: '/link' })
+    res.payload = {
+      ...temp,
     }
 
-    async encryptObject(cleartext, dids: string[]) {
-        const jwe = await this.did.createDagJWE(cleartext, dids)
-        return this.client.dag.put(jwe, multicodec.DAG_CBOR);
-    }
+    return temp
+  }
+  /**
+   * Get IPLD object
+   * @param cid content id
+   */
+  async get(cid: string): Promise<any> {
+    let temp = await this.client.dag.get(cid)
+    return temp
+  }
+  verify(obj: any): Promise<any> {
+    return this.did.verifyJWS(obj.metadata)
+  }
 
-    async decryptObject(didInstance: DID, cid, query) {
-        const jwe = (await this.client.dag.get(cid, query)).value
-        const cleartext = await didInstance.decryptDagJWE(jwe)
-        return { jwe, cleartext };
-    }
-    async addPublicWallet(
-        did: DID,
-        payload: Buffer) {
-        let temp: string;
-        let content: Buffer;
-        temp = keccak256(payload);
-        content = payload;
-        temp = temp.replace('0x', '');
-        // sign the payload as dag-cbor
-        const cid = await this.client.add({
-            path: 'index.json',
-            content
-        });
-        return cid.toString()
-    }
+  async encryptObject(cleartext, dids: string[]) {
+    const jwe = await this.did.createDagJWE(cleartext, dids)
+    return this.client.dag.put(jwe, multicodec.DAG_CBOR)
+  }
+
+  async decryptObject(didInstance: DID, cid, query) {
+    const jwe = (await this.client.dag.get(cid, query)).value
+    const cleartext = await didInstance.decryptDagJWE(jwe)
+    return { jwe, cleartext }
+  }
+  async addPublicWallet(did: DID, payload: Buffer) {
+    let temp: string
+    let content: Buffer
+    temp = keccak256(payload)
+    content = payload
+    temp = temp.replace('0x', '')
+    // sign the payload as dag-cbor
+    const cid = await this.client.add({
+      path: 'index.json',
+      content,
+    })
+    return cid.toString()
+  }
 }

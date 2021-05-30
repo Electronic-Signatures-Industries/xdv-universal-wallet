@@ -6,15 +6,43 @@ import { DIDManager } from './DIDManager'
 import { IPLDManager } from './IPLDManager'
 import { fromDagJWS } from 'did-jwt-rsa/lib/utils'
 import { X509Utils } from '../crypto'
+import { link } from 'fs'
 
 async function bootstrap() {
   const didManager = new DIDManager()
-  const didRSA = await didManager.create3ID_RSA()
+  const pin = '18586874'
+  const didRSA = await didManager.create3ID_PKCS11(pin)
   await didRSA.did.authenticate()
   const res = await didRSA.did.createDagJWS({
     test: 'Hello World',
   })
-  console.log(res)
+
+  const ipfsManager = new IPLDManager(didRSA.did)
+  await ipfsManager.start(`http://ifesa.ipfs.pa:5001`)
+
+  const alice = Buffer.from('Hola Alice!')
+  const links = []
+  // Alice
+  let cid = await ipfsManager.addSignedObject(alice, {
+    name: 'alice.txt',
+    contentType: 'text/html',
+    lastModified: new Date(),
+  })
+  links.push(cid)
+  const bob = Buffer.from('Hola IPFS World!')
+  // Bob
+  let cid2 = await ipfsManager.addSignedObject(bob, {
+    name: 'bob.txt',
+    contentType: 'text/html',
+    lastModified: new Date(),
+  })
+  links.push(cid2)
+
+  let cid3 = await ipfsManager.addSignedObject(Buffer.from('Alice and Bob linked data'), {
+    info: 'Alice and Bob linked data',
+    links
+  });
+  console.log(cid3)
   console.log(didRSA.did.id)
 }
 
@@ -41,7 +69,7 @@ async function pkcs11() {
   })
   printVerification(res, didRSA)
   const ipfsManager = new IPLDManager(didRSA.did)
-  await ipfsManager.start()
+  await ipfsManager.start(`https://ifesa.ipfs.pa:5001`)
 
   const fil = Buffer.from('Hola IPFS World!')
   // auth
@@ -50,9 +78,9 @@ async function pkcs11() {
     contentType: 'text/html',
     lastModified: new Date(),
   })
-  const res2 = await ipfsManager.get(cid)
+  const res2 = await ipfsManager.get(cid.toString())
   console.log(res2.value)
   printVerification({ jws: res2.value }, didRSA)
 }
 
-pkcs11()
+bootstrap()
