@@ -12,7 +12,7 @@ import { SmartCardConnectorPKCS11 } from '../did/SmartcardConnector'
 const DID_LD_JSON = 'application/did+ld+json'
 const DID_JSON = 'application/did+json'
 
-const didjwtec = require('did-jwt')
+import * as dids from 'dids'
 const varint = require('varint')
 const multibase = require('multibase')
 /**
@@ -167,7 +167,7 @@ return {
     let seed = edDSAKeyPair.getSecret().slice(0, 32)
 
     const provider = new Ed25519Provider(seed)
-    const did = new didjwtec.DID(({
+    const did = new dids.DID(({
       provider,
       resolver: KeyResolver.getResolver(),
     } as unknown) as DIDOptions)
@@ -182,7 +182,7 @@ return {
     return {
       did,
       getIssuer: issuer,
-    } as DIDContext
+    } as unknown as DIDContext
   }
 
   /**
@@ -201,7 +201,7 @@ return {
     const threeid = new ThreeIdConnect()
     const authProvider = new EthereumAuthProvider(web3provider, address)
     await threeid.connect(authProvider)
-    const did = new didjwtec.DID({
+    const did = new dids.DID({
       provider: (await threeid.getDidProvider()) as any,
       resolver: KeyResolver.getResolver(),
     } as unknown)
@@ -215,7 +215,7 @@ return {
     return {
       did,
       issuer,
-    } as DIDContext
+    } as unknown as DIDContext
   }
 
   /**
@@ -234,7 +234,7 @@ return {
     const authProvider = new EthereumAuthProvider(web3provider, address)
     await threeid.connect(authProvider)
 
-    const did = new didjwtec.DID({
+    const did = new dids.DID({
       provider: (await threeid.getDidProvider()) as any,
       resolver: KeyResolver.getResolver(),
     } as unknown)
@@ -242,6 +242,6 @@ return {
     return {
       did,
       issuer: null,
-    } as DIDContext
+    } as unknown as DIDContext
   }
 }

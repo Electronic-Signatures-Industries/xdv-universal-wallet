@@ -12,7 +12,7 @@ const dids_1 = require("did-jwt-rsa/lib/dids");
 const SmartcardConnector_1 = require("../did/SmartcardConnector");
 const DID_LD_JSON = 'application/did+ld+json';
 const DID_JSON = 'application/did+json';
-const didjwtec = require('did-jwt');
+const dids = tslib_1.__importStar(require("dids"));
 const varint = require('varint');
 const multibase = require('multibase');
 /**
@@ -152,7 +152,7 @@ class DIDManager {
     async create3ID_Ed25519(edDSAKeyPair) {
         let seed = edDSAKeyPair.getSecret().slice(0, 32);
         const provider = new key_did_provider_ed25519_1.Ed25519Provider(seed);
-        const did = new didjwtec.DID({
+        const did = new dids.DID({
             provider,
             resolver: key_did_resolver_1.default.getResolver(),
         });
@@ -179,7 +179,7 @@ class DIDManager {
         const threeid = new _3id_connect_1.ThreeIdConnect();
         const authProvider = new _3id_connect_1.EthereumAuthProvider(web3provider, address);
         await threeid.connect(authProvider);
-        const did = new didjwtec.DID({
+        const did = new dids.DID({
             provider: (await threeid.getDidProvider()),
             resolver: key_did_resolver_1.default.getResolver(),
         });
@@ -205,7 +205,7 @@ class DIDManager {
         const threeid = new _3id_connect_1.ThreeIdConnect();
         const authProvider = new _3id_connect_1.EthereumAuthProvider(web3provider, address);
         await threeid.connect(authProvider);
-        const did = new didjwtec.DID({
+        const did = new dids.DID({
             provider: (await threeid.getDidProvider()),
             resolver: key_did_resolver_1.default.getResolver(),
         });
