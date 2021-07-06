@@ -159,6 +159,7 @@ export declare class Wallet {
     /**
      * Enrolls account, returns false if already exists, otherwise account model
      * @param options create or load wallet options, password must be at least 12 chars
+     * @deprecated Only call open, will be removed in 0.6.0
      */
     enrollAccount(options: ICreateOrLoadWalletProps): Promise<any>;
     close(): Promise<void>;

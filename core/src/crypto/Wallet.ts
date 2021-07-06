@@ -226,6 +226,10 @@ export class Wallet {
         ignoreDuplicate: true,
       })
 
+      await this.enrollAccount({
+        accountName,
+        passphrase
+      })
       return this
     } catch (e) {
       // already exists
@@ -235,6 +239,7 @@ export class Wallet {
   /**
    * Enrolls account, returns false if already exists, otherwise account model
    * @param options create or load wallet options, password must be at least 12 chars
+   * @deprecated Only call open, will be removed in 0.6.0
    */
   async enrollAccount(options: ICreateOrLoadWalletProps) {
     await this.db.addCollections({

@@ -12,6 +12,7 @@ import { SmartCardConnectorPKCS11 } from '../did/SmartcardConnector'
 const DID_LD_JSON = 'application/did+ld+json'
 const DID_JSON = 'application/did+json'
 
+const didjwtec = require('did-jwt')
 const varint = require('varint')
 const multibase = require('multibase')
 /**
@@ -152,7 +153,7 @@ export class DIDManager {
       }
       return response
     }
-    return {
+return {
       key: resolve,
     }
   }
@@ -166,7 +167,7 @@ export class DIDManager {
     let seed = edDSAKeyPair.getSecret().slice(0, 32)
 
     const provider = new Ed25519Provider(seed)
-    const did = new DID(({
+    const did = new didjwtec.DID(({
       provider,
       resolver: KeyResolver.getResolver(),
     } as unknown) as DIDOptions)
@@ -200,7 +201,7 @@ export class DIDManager {
     const threeid = new ThreeIdConnect()
     const authProvider = new EthereumAuthProvider(web3provider, address)
     await threeid.connect(authProvider)
-    const did = new DID({
+    const did = new didjwtec.DID({
       provider: (await threeid.getDidProvider()) as any,
       resolver: KeyResolver.getResolver(),
     } as unknown)
@@ -229,10 +230,11 @@ export class DIDManager {
     address: string,
   ): Promise<DIDContext> {
     const threeid = new ThreeIdConnect()
+
     const authProvider = new EthereumAuthProvider(web3provider, address)
     await threeid.connect(authProvider)
 
-    const did = new DID({
+    const did = new didjwtec.DID({
       provider: (await threeid.getDidProvider()) as any,
       resolver: KeyResolver.getResolver(),
     } as unknown)

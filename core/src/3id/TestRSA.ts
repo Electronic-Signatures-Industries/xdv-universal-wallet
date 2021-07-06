@@ -11,7 +11,7 @@ import { link } from 'fs'
 async function bootstrap() {
   const didManager = new DIDManager()
   const pin = '18586874'
-  const didRSA = await didManager.create3ID_PKCS11(pin)
+  const didRSA = await didManager.create3ID_RSA(pin)
   await didRSA.did.authenticate()
   const res = await didRSA.did.createDagJWS({
     test: 'Hello World',
@@ -69,7 +69,7 @@ async function pkcs11() {
   })
   printVerification(res, didRSA)
   const ipfsManager = new IPLDManager(didRSA.did)
-  await ipfsManager.start(`https://ifesa.ipfs.pa:5001`)
+  await ipfsManager.start(`http://ifesa.ipfs.pa:5001`)
 
   const fil = Buffer.from('Hola IPFS World!')
   // auth

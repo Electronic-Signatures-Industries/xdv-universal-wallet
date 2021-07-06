@@ -154,6 +154,10 @@ class Wallet {
                 password: passphrase,
                 ignoreDuplicate: true,
             });
+            await this.enrollAccount({
+                accountName,
+                passphrase
+            });
             return this;
         }
         catch (e) {
@@ -164,6 +168,7 @@ class Wallet {
     /**
      * Enrolls account, returns false if already exists, otherwise account model
      * @param options create or load wallet options, password must be at least 12 chars
+     * @deprecated Only call open, will be removed in 0.6.0
      */
     async enrollAccount(options) {
         await this.db.addCollections({
