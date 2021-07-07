@@ -97,7 +97,7 @@ Verifies aggregated signatures, many messages signed by many
 
 Returns a `Promise<Uint8Array>`
 
-
+### Crypto suites
 
 #### static async createES256K(options: any)
   
@@ -120,9 +120,9 @@ Returns a `XDVUniversalProvider`
 * `id`: A wallet id
 * `address`: Wallet address
 
-#### static async create3IDEd25519(options: any)
+#### static async createEd25519(options: any)
   
-Creates an Ed25519 universal wallet
+Creates an Ed25519 universal wallet with DID Key as result.
 
 >Note: Signing only, support for X25519 will be added later
 
@@ -136,17 +136,13 @@ Parameters
 Returns a `XDVUniversalProvider`
 
 * `did`: A DID object from 3ID library. Allows to authenticate and sign with IPLD
-* `secureMesssage`: Uses `EthCrypto` for encrypting and decrypting
 * `publicKey`: A public key as an array like
-* `issuer`: A DID object for issue signers
-* `web3`: Web3 instance used by DApps
-* `id`: A wallet id
-* `address`: Wallet address
-
+* `getIssuer`: A DID object for issue signers
+* `privateKey`: A private key as an array like
 
 #### static async createWeb3Provider(options: any)
   
-Creates a Web3 provider universal wallet
+Creates a Web3 provider
 
 Parameters
 
@@ -155,18 +151,266 @@ Parameters
 * `rpcUrl`: An EVM Compatible chain (Ethereum, Binance Smart Chain, etc)
 * `registry`: Contract address for EVM compatible ethr-did registry
 
-### 3id/DIDManager
 
-### 3id/DriveManager
+Returns a `XDVUniversalProvider`
 
-### 3id/IPFSManager
+* `secureMesssage`: Uses `EthCrypto` for encrypting and decrypting
+* `publicKey`: A public key as an array like
+* `web3`: Web3 instance used by DApps
+* `address`: Wallet address
 
-### 3id/W3CVerifiedCredential
 
+### Usage
 
-#### issueCredential(did: DID, issuer: any, holderInfo: any)
-  
-Issues a Verified Credential
+#### How to create, import and open a wallet
 
-Parameters
-* @param options { passphrase, walletid, rpcUrl }
+```typescript
+
+  /**
+   * Creates a wallet account
+   * @param accountName Account name
+   * @param passphrase Passphrase
+   */
+  async createAccount(accountName: string, passphrase: string) {
+  // Set isWeb for browser usage
+    const xdvWallet = new Wallet({ isWeb: true })
+    
+    // Unlocks wallet
+    await xdvWallet.open(accountName, passphrase)
+  }
+
+  /**
+   * Creates a wallet
+   * @param accountName Account name
+   * @param passphrase Passphrase
+   * @returns
+   */
+  async createWallet(accountName: string, passphrase: string) {
+    const xdvWallet = new Wallet({ isWeb: true })
+    await xdvWallet.open(accountName, passphrase)
+
+    // Gets account, if null, user needs to enroll
+    const acct = (await xdvWallet.getAccount()) as any
+    let walletId
+
+    if (acct.keystores.length === 0) {
+      // Adds a wallet. 
+      walletId = await xdvWallet.addWallet()
+    } else {
+      // Gets first wallet 
+      walletId = acct.keystores[0].walletId
+    }
+
+    // Creates a wallet based on crypto suite
+    const wallet = await xdvWallet.createEd25519({
+      passphrase: passphrase,
+      walletId: walletId,
+    })
+
+    return wallet as any
+  }
+
+  /**
+   * Imports an existing seed phrase
+   * @param accountName Account name
+   * @param passphrase Passphrase
+   * @param mnemonic Seed phrase
+   * @returns
+   */
+  async importWallet(
+    accountName: string,
+    passphrase: string,
+    mnemonic: string,
+  ) {
+    const xdvWallet = new Wallet({ isWeb: true })
+    await xdvWallet.open(accountName, passphrase)
+
+    const acct = (await xdvWallet.getAccount()) as any
+
+    if (acct.keystores.length > 0) {
+      // already imported
+      return xdvWallet
+    }
+
+    // Import wallet using existing mnemonic
+    const walletId = await xdvWallet.addWallet({
+      mnemonic,
+    })
+
+    const wallet = await xdvWallet.createEd25519({
+      passphrase: passphrase,
+      walletId: walletId,
+    })
+
+    return wallet as any
+  }
+
+```
+
+#### How to encrypt between two parties
+
+```typescript
+// Obtain a previously created account
+let acct = await wallet.getAccount()
+
+// add Alice and Bob wallets with auto generated mnemonic
+const walletAId = await wallet.addWallet()
+const walletBId = await wallet.addWallet()
+
+// create DIDs
+const did = await wallet.createEd25519({
+  walletId: walletAId
+})
+const didBob = await wallet.createEd25519({
+  walletId: walletBId
+})
+
+// create Alice IPLD Manager
+const ipfsManager = new IPLDManager(did.did)
+await ipfsManager.start()
+
+// Authenticate with DID
+await did.did.authenticate()
+await didBob.did.authenticate()
+
+// Alice encrypts, and both Alice and Bob can decrypt
+const enc = await ipfsManager.encryptObject('Hola Mundo !!!', [
+  didBob.did.id,
+])
+
+// Bob DID decrypts content
+const res = await ipfsManager.decryptObject(didBob.did, enc.toString(), {})
+expect(res.cleartext).toEqual('Hola Mundo !!!')
+```
+
+#### Cosmos SDK - Starport Wallet
+
+```typescript
+
+require('dotenv').config()
+
+import { DirectSecp256k1HdWallet, Registry } from '@cosmjs/proto-signing'
+import { defaultRegistryTypes, SigningStargateClient, StargateClient } from '@cosmjs/stargate'
+
+import { KeystoreDbModel, Wallet } from 'xdv-universal-wallet-core'
+import { Tendermint34Client } from '@cosmjs/tendermint-rpc'
+import * as xdvnode from './xdvnode'
+import * as bank from './bank'
+
+export class XDVNodeProvider {
+  registry: Registry
+  wallet: Wallet
+  /**
+   * Register Msg imports
+   */
+  constructor() {
+    this.wallet = new Wallet({ isWeb: false })
+    
+  }
+
+  /**
+   * Creates a wallet account
+   * @param accountName Account name
+   * @param passphrase Passphrase
+   */
+  async createAccount(accountName: string, passphrase: string) {
+    await this.wallet.open(accountName, passphrase)
+    await this.wallet.enrollAccount({
+      accountName,
+    })
+
+  }
+
+  /**
+   * Creates a wallet
+   * @param accountName Account name
+   * @param passphrase Passphrase
+   * @returns
+   */
+  async createWallet(accountName: string, passphrase: string) {
+    await this.wallet.open(accountName, passphrase)
+
+    const acct = (await this.wallet.getAccount()) as any
+    let walletId
+
+    if (acct.keystores.length === 0) {
+      walletId = await this.wallet.addWallet()
+    } else {
+      walletId = acct.keystores[0].walletId
+    }
+
+    const wallet = await this.wallet.createEd25519({
+      passphrase: passphrase,
+      walletId: walletId,
+    })
+
+    return wallet as any
+  }
+
+  /**
+   * Imports an existing seed phrase
+   * @param accountName Account name
+   * @param passphrase Passphrase
+   * @param mnemonic Seed phrase
+   * @returns
+   */
+  async importWallet(
+    accountName: string,
+    passphrase: string,
+    mnemonic: string,
+  ) {
+    await this.wallet.open(accountName, passphrase)
+
+    const acct = (await this.wallet.getAccount()) as any
+
+    if (acct.keystores.length > 0) {
+      // already imported
+      return this.wallet
+    }
+
+    const walletId = await this.wallet.addWallet({
+      mnemonic,
+    })
+
+    const wallet = await this.wallet.createEd25519({
+      passphrase: passphrase,
+      walletId: walletId,
+    })
+
+    return wallet as any
+  }
+
+  async createOrLoadXDVProvider(accountName: string, passphrase: string) {
+    const acct = (await this.wallet.getAccount()) as any
+    let walletId = ''
+    if (acct.keystores.length === 0) {
+      walletId = await this.wallet.addWallet({
+        mnemonic: process.env.ALICE_M,
+      })
+    } else {
+      walletId = acct.keystores[0].walletId
+    }
+
+    const keystore = await acct.keystores.find(
+      (k: KeystoreDbModel) => k.walletId === walletId,
+    )
+
+    console.log(keystore)
+    const signer = await DirectSecp256k1HdWallet.fromMnemonic(
+      keystore.mnemonic,
+      { prefix: 'xdv' },
+    )
+    
+    return { 
+      bank: await bank.txClient(
+        signer,
+      ),
+      xdvnode: await xdvnode.txClient(
+        signer,
+      )
+    }
+  }
+}
+```
+
+> Copyright Industrias de Firmas Electronicas SA and contributors 2020, 2021
