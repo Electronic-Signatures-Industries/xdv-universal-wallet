@@ -365,7 +365,6 @@ export class Wallet {
     web3.eth.accounts.wallet.add(privateKey)
     const address = web3.eth.accounts.privateKeyToAccount(privateKey).address
     web3.defaultAccount = address
-    const didManager = new DIDManager()
     const ES256k = new ec('secp256k1')
 
     const encrypt = async (pub, message) => {
@@ -385,21 +384,14 @@ export class Wallet {
 
       return data
     }
-    const { did, issuer } = await didManager.create3IDWeb3(
-      address,
-      ES256k.keyFromPrivate(ks.keypairs.ES256K),
-      web3,
-      options.registry,
-    )
+    
 
     return ({
-      did,
       secureMessage: {
         encrypt,
         decrypt,
       },
       publicKey: ES256k.keyFromPrivate(ks.keypairs.ES256K).getPublic(),
-      issuer,
       web3,
       address,
     } as unknown) as XDVUniversalProvider

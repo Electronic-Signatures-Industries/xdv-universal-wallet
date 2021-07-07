@@ -268,7 +268,6 @@ class Wallet {
         web3.eth.accounts.wallet.add(privateKey);
         const address = web3.eth.accounts.privateKeyToAccount(privateKey).address;
         web3.defaultAccount = address;
-        const didManager = new DIDManager_1.DIDManager();
         const ES256k = new elliptic_1.ec('secp256k1');
         const encrypt = async (pub, message) => {
             const data = await eth_crypto_1.default.encryptWithPublicKey(pub.replace('0x', ''), message);
@@ -278,15 +277,12 @@ class Wallet {
             const data = await eth_crypto_1.default.decryptWithPrivateKey(ks.keypairs.ES256K, eth_crypto_1.default.cipher.parse(cipher));
             return data;
         };
-        const { did, issuer } = await didManager.create3IDWeb3(address, ES256k.keyFromPrivate(ks.keypairs.ES256K), web3, options.registry);
         return {
-            did,
             secureMessage: {
                 encrypt,
                 decrypt,
             },
             publicKey: ES256k.keyFromPrivate(ks.keypairs.ES256K).getPublic(),
-            issuer,
             web3,
             address,
         };

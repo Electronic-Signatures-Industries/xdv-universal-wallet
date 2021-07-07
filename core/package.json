@@ -1,6 +1,6 @@
 {
    "name": "xdv-universal-wallet-core",
-   "version": "0.5.2",
+   "version": "0.5.3",
    "description": "The base business logic for the universal wallet",
    "main": "lib/index.js",
    "scripts": {
