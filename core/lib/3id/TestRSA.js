@@ -72,8 +72,8 @@ async function pkcs11() {
         lastModified: new Date(),
     });
     const res2 = await ipfsManager.get(cid.toString());
-    console.log(res2.value);
+    console.log((res2.value));
     printVerification({ jws: res2.value }, didRSA);
 }
-bootstrap();
+pkcs11();
 //# sourceMappingURL=TestRSA.js.map

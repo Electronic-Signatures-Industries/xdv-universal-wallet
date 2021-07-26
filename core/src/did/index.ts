@@ -5,3 +5,4 @@ export * from './DIDDocumentBuilder';
 export * from './PublicKey';
 export * from './PrivateKey';
 export * from './ServiceEndpoint';
+export * from './SmartcardSigner'

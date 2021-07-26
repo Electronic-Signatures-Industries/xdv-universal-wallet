@@ -11,6 +11,26 @@ export interface SignResponse {
   type: string
   error: string
 }
+export interface SignPSSResponse {
+  publicKey: string
+  publicKey2?: string
+  certificate?: string
+  signature: string
+  digest: string
+  type: string
+  error: string
+}
+export interface SignPadesResponse {
+  publicKey: string
+  publicKey2?: string
+  certificate?: string
+  signedDocument: string
+  signature: string
+  digest: string
+  type: string
+  error: string
+}
+
 export interface SmartCardConnectorEvent {
   eventName: string
   payload: any
@@ -41,14 +61,12 @@ export class SmartCardConnectorPKCS11 {
   }
 
   /**
-   * 
-   * @param index Slot index
+   * Sign JWS
    * @param pin PIN
    * @param data Data as Uint8Array
    * @returns A Promise<SignResponse>
    */
-  async signPromise(
-    index: string,
+  async signJWS(
     pin: string,
     data: Uint8Array,
   ): Promise<SignResponse> {
@@ -61,7 +79,7 @@ export class SmartCardConnectorPKCS11 {
       this.stompClient.publish({
         destination: '/app/sign',
         body: JSON.stringify({
-          tokenIndex: index,
+          tokenIndex: 0,
           pin: pin,
           data,
         }),
@@ -69,6 +87,62 @@ export class SmartCardConnectorPKCS11 {
     })
   }
 
+
+  /**
+   * Sign PAdes
+   * @param pin PIN
+   * @param data Data as Uint8Array
+   * @returns A Promise<SignResponse>
+   */
+   async signPades(
+    pin: string,
+    data: Uint8Array,
+  ): Promise<SignPadesResponse> {
+    return new Promise((resolve, reject) => {
+      const c = this.stompClient.subscribe('/xdv/pdf_signed', (res: any) => {
+        resolve(JSON.parse(res.body) as SignPadesResponse)
+        c.unsubscribe()
+      })
+
+      this.stompClient.publish({
+        destination: '/app/sign_pdf',
+        body: JSON.stringify({
+          tokenIndex: 0,
+          pin: pin,
+          data,
+        }),
+      })
+    })
+  }  
+
+
+    /**
+   * Sign PSS
+   * @param pin PIN
+   * @param data Data as Uint8Array
+   * @returns A Promise<SignResponse>
+   */
+     async signPSS(
+      pin: string,
+      data: Uint8Array,
+    ): Promise<SignResponse> {
+      return new Promise((resolve, reject) => {
+        const c = this.stompClient.subscribe('/xdv/pss_signed', (res: any) => {
+          resolve(JSON.parse(res.body) as SignPSSResponse)
+          c.unsubscribe()
+        })
+  
+        this.stompClient.publish({
+          destination: '/app/sign_pss',
+          body: JSON.stringify({
+            tokenIndex: 0,
+            pin: pin,
+            data,
+          }),
+        })
+      })
+    }  
+  
   /**
    * Get certificates
    * @param index Slot index

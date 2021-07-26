@@ -26,13 +26,12 @@ class SmartCardConnectorPKCS11 {
         });
     }
     /**
-     *
-     * @param index Slot index
+     * Sign JWS
      * @param pin PIN
      * @param data Data as Uint8Array
      * @returns A Promise<SignResponse>
      */
-    async signPromise(index, pin, data) {
+    async signJWS(pin, data) {
         return new Promise((resolve, reject) => {
             const c = this.stompClient.subscribe('/xdv/signed', (res) => {
                 resolve(JSON.parse(res.body));
@@ -41,7 +40,51 @@ class SmartCardConnectorPKCS11 {
             this.stompClient.publish({
                 destination: '/app/sign',
                 body: JSON.stringify({
-                    tokenIndex: index,
+                    tokenIndex: 0,
+                    pin: pin,
+                    data,
+                }),
+            });
+        });
+    }
+    /**
+     * Sign PAdes
+     * @param pin PIN
+     * @param data Data as Uint8Array
+     * @returns A Promise<SignResponse>
+     */
+    async signPades(pin, data) {
+        return new Promise((resolve, reject) => {
+            const c = this.stompClient.subscribe('/xdv/pdf_signed', (res) => {
+                resolve(JSON.parse(res.body));
+                c.unsubscribe();
+            });
+            this.stompClient.publish({
+                destination: '/app/sign_pdf',
+                body: JSON.stringify({
+                    tokenIndex: 0,
+                    pin: pin,
+                    data,
+                }),
+            });
+        });
+    }
+    /**
+   * Sign PSS
+   * @param pin PIN
+   * @param data Data as Uint8Array
+   * @returns A Promise<SignResponse>
+   */
+    async signPSS(pin, data) {
+        return new Promise((resolve, reject) => {
+            const c = this.stompClient.subscribe('/xdv/pss_signed', (res) => {
+                resolve(JSON.parse(res.body));
+                c.unsubscribe();
+            });
+            this.stompClient.publish({
+                destination: '/app/sign_pss',
+                body: JSON.stringify({
+                    tokenIndex: 0,
                     pin: pin,
                     data,
                 }),

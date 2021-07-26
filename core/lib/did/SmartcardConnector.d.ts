@@ -11,6 +11,25 @@ export interface SignResponse {
     type: string;
     error: string;
 }
+export interface SignPSSResponse {
+    publicKey: string;
+    publicKey2?: string;
+    certificate?: string;
+    signature: string;
+    digest: string;
+    type: string;
+    error: string;
+}
+export interface SignPadesResponse {
+    publicKey: string;
+    publicKey2?: string;
+    certificate?: string;
+    signedDocument: string;
+    signature: string;
+    digest: string;
+    type: string;
+    error: string;
+}
 export interface SmartCardConnectorEvent {
     eventName: string;
     payload: any;
@@ -28,13 +47,26 @@ export declare class SmartCardConnectorPKCS11 {
      */
     getSlots(): Promise<void>;
     /**
-     *
-     * @param index Slot index
+     * Sign JWS
      * @param pin PIN
      * @param data Data as Uint8Array
      * @returns A Promise<SignResponse>
      */
-    signPromise(index: string, pin: string, data: Uint8Array): Promise<SignResponse>;
+    signJWS(pin: string, data: Uint8Array): Promise<SignResponse>;
+    /**
+     * Sign PAdes
+     * @param pin PIN
+     * @param data Data as Uint8Array
+     * @returns A Promise<SignResponse>
+     */
+    signPades(pin: string, data: Uint8Array): Promise<SignPadesResponse>;
+    /**
+   * Sign PSS
+   * @param pin PIN
+   * @param data Data as Uint8Array
+   * @returns A Promise<SignResponse>
+   */
+    signPSS(pin: string, data: Uint8Array): Promise<SignResponse>;
     /**
      * Get certificates
      * @param index Slot index

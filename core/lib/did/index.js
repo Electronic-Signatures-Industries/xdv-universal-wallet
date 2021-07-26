@@ -8,4 +8,5 @@ tslib_1.__exportStar(require("./DIDDocumentBuilder"), exports);
 tslib_1.__exportStar(require("./PublicKey"), exports);
 tslib_1.__exportStar(require("./PrivateKey"), exports);
 tslib_1.__exportStar(require("./ServiceEndpoint"), exports);
+tslib_1.__exportStar(require("./SmartcardSigner"), exports);
 //# sourceMappingURL=index.js.map
