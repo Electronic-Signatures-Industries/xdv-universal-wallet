@@ -96,7 +96,7 @@ export class SmartCardConnectorPKCS11 {
    */
    async signPades(
     pin: string,
-    data: Uint8Array,
+    data: string,
   ): Promise<SignPadesResponse> {
     return new Promise((resolve, reject) => {
       const c = this.stompClient.subscribe('/xdv/pdf_signed', (res: any) => {

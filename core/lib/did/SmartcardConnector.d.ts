@@ -59,7 +59,7 @@ export declare class SmartCardConnectorPKCS11 {
      * @param data Data as Uint8Array
      * @returns A Promise<SignResponse>
      */
-    signPades(pin: string, data: Uint8Array): Promise<SignPadesResponse>;
+    signPades(pin: string, data: string): Promise<SignPadesResponse>;
     /**
    * Sign PSS
    * @param pin PIN

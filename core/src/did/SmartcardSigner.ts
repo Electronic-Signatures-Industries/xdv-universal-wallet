@@ -32,7 +32,7 @@ export async function PadesSigner(pem: string, isPIN: boolean) {
     const sc = new SmartCardConnectorPKCS11()
     await sc.connect()
 
-    return async (data: Uint8Array) => await sc.signPades(pem, data)
+    return async (data: string) => await sc.signPades(pem, data)
   }
 
   const keyImport = new NodeRSA(pem)
