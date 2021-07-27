@@ -29,7 +29,7 @@ export declare class KeyConvert {
         pem: any;
         ldSuite: {
             publicKeyJwk: string;
-            pubBytes: () => Uint8Array;
+            pubBytes: () => Buffer;
             privBytes: () => Buffer;
         };
     }>;
@@ -49,7 +49,7 @@ export declare class KeyConvert {
         pem: any;
         ldSuite: {
             publicKeyJwk: string;
-            pubBytes: () => Uint8Array;
+            pubBytes: () => Buffer;
             privBytes: () => Buffer;
         };
     }>;
