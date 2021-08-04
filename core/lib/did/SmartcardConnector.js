@@ -70,6 +70,28 @@ class SmartCardConnectorPKCS11 {
         });
     }
     /**
+     * Sign XAdes
+     * @param pin PIN
+     * @param data Data as Uint8Array
+     * @returns A Promise<SignResponse>
+     */
+    async signXades(pin, data) {
+        return new Promise((resolve, reject) => {
+            const c = this.stompClient.subscribe('/xdv/xml_signed', (res) => {
+                resolve(JSON.parse(res.body));
+                c.unsubscribe();
+            });
+            this.stompClient.publish({
+                destination: '/app/sign_xml',
+                body: JSON.stringify({
+                    tokenIndex: 0,
+                    pin: pin,
+                    data,
+                }),
+            });
+        });
+    }
+    /**
    * Sign PSS
    * @param pin PIN
    * @param data Data as Uint8Array
