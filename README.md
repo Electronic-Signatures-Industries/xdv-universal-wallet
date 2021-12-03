@@ -1,3 +1,5 @@
+DEPRECATED
+
 # xdv-universal-wallet
 XDV Universal Wallet
 
